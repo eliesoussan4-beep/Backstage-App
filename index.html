@@ -1,0 +1,3090 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Backstage</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#141316">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Backstage">
+<style>
+  :root{
+    --bg:#141316;
+    --surface:#1E1C20;
+    --surface-2:#252228;
+    --border:#332F37;
+    --text:#F5F1EA;
+    --text-dim:#9C96A3;
+    --accent:#E8B33D;
+    --accent-dim:#B8862A;
+    --s0:#C1554B;
+    --s1:#D9A544;
+    --s2:#6FA97C;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  .app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:var(--bg);
+  }
+  header.topbar{
+    padding:22px 20px 14px;
+    background:
+      radial-gradient(ellipse 600px 300px at 50% -30%, rgba(232,179,61,0.14), transparent 70%),
+      var(--bg);
+  }
+  .topbar-flex{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .topbar-left{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex-shrink:0;
+  }
+  header.topbar h1{
+    font-size:22px;
+    margin:0;
+    font-weight:800;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+  }
+  header.topbar h1 span{color:var(--accent);}
+  .rating-detail-panel{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px 18px;
+    align-content:center;
+    max-width:220px;
+  }
+  .rd-row{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12px;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+  .rd-row .rd-value{
+    color:var(--text);
+    font-weight:700;
+  }
+  main{
+    flex:1;
+    padding:4px 20px 100px;
+    overflow-y:auto;
+  }
+  .view{display:none;}
+  .view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .section-label{
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin:22px 0 10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--border);
+  }
+
+  .section-label.clickable{
+    cursor:pointer;
+    user-select:none;
+  }
+  .chevron{
+    font-size:14px;
+    color:var(--text-dim);
+    transition:transform .2s ease;
+    flex-shrink:0;
+  }
+  .chevron.open{
+    transform:rotate(90deg);
+  }
+
+  .rating-title{
+    font-size:15px;
+    font-weight:800;
+  }
+  .rating-sub{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:2px;
+  }
+
+  .rating-stars-btn{
+    cursor:pointer;
+    padding:6px 4px;
+  }
+  .rating-stars{
+    display:flex;
+    gap:3px;
+    flex-shrink:0;
+  }
+  .rating-stars svg{width:20px;height:20px;}
+
+  .gen-row{
+    display:flex;
+    gap:10px;
+  }
+  .gen-card{
+    flex:1;
+    text-align:center;
+    margin:0 !important;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .numgen-edit-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+  }
+
+  .btn-col{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .big-btn{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:18px 18px;
+    background:var(--accent);
+    color:#1A1508;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:0.02em;
+    text-align:left;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 8px 20px -8px rgba(232,179,61,0.45);
+  }
+  .big-btn small{
+    display:block;
+    font-weight:600;
+    font-size:11.5px;
+    opacity:0.75;
+    margin-top:2px;
+  }
+  .big-btn .arrow{font-size:20px;opacity:0.8;}
+
+  .row-btn{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    background:var(--surface);
+    color:var(--text);
+    font-size:14.5px;
+    font-weight:600;
+    text-align:left;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .row-btn .label-group{
+    display:flex;
+    align-items:center;
+    gap:11px;
+  }
+  .row-btn .label-group svg{
+    width:18px;
+    height:18px;
+    stroke:var(--accent);
+    fill:none;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    flex-shrink:0;
+  }
+  .row-btn .arrow{color:var(--text-dim);}
+  .row-btn.notion{color:var(--text-dim);border-style:dashed;}
+  .row-btn.notion .tag{
+    font-size:9.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:var(--surface-2);
+    padding:3px 7px;
+    border-radius:5px;
+    color:var(--text-dim);
+  }
+
+  .period-switch{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .period-btn{
+    flex:1;
+    padding:9px 0;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text-dim);
+    font-weight:700;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .period-btn.active{
+    background:var(--accent);
+    color:#1A1508;
+    border-color:var(--accent);
+  }
+  #period-picker-wrap input{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px 14px;
+    color:var(--text);
+    font-size:14px;
+  }
+
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:14px;
+  }
+  .stat-card .big-num{
+    font-size:34px;
+    font-weight:800;
+    color:var(--accent);
+    line-height:1;
+  }
+  .stat-card .label{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:4px;
+    letter-spacing:0.03em;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  /* form */
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--text-dim);
+    letter-spacing:0.04em;
+    margin-bottom:6px;
+  }
+  .field input[type=text], .field input[type=date]{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--text);
+    font-size:15px;
+  }
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+  .crit{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 14px;
+    margin-bottom:10px;
+  }
+  .crit .crit-title{
+    font-size:14px;
+    font-weight:700;
+  }
+  .crit .crit-hint{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:2px;
+    margin-bottom:10px;
+  }
+  .score-row{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .score-btn{
+    flex:1;
+    padding:11px 0;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text-dim);
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .score-btn[data-v="0"].selected{background:var(--s0);color:#fff;border-color:var(--s0);box-shadow:0 0 0 3px rgba(193,85,75,0.25);}
+  .score-btn[data-v="1"].selected{background:var(--s1);color:#1A1508;border-color:var(--s1);box-shadow:0 0 0 3px rgba(217,165,68,0.25);}
+  .score-btn[data-v="2"].selected{background:var(--s2);color:#0E1A11;border-color:var(--s2);box-shadow:0 0 0 3px rgba(111,169,124,0.25);}
+
+  .total-preview{
+    position:sticky;
+    bottom:0;
+    background:linear-gradient(180deg, transparent, var(--bg) 30%);
+    padding:16px 0 6px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .total-preview .score-out{
+    font-size:22px;
+    font-weight:800;
+    color:var(--accent);
+  }
+  .save-btn{
+    border:none;
+    border-radius:12px;
+    padding:14px 22px;
+    background:var(--accent);
+    color:#1A1508;
+    font-weight:800;
+    font-size:14.5px;
+    cursor:pointer;
+  }
+  .save-btn:disabled{opacity:0.35;cursor:not-allowed;}
+
+  .scene-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+  }
+  .scene-item .meta .nom{font-size:14px;font-weight:700;}
+  .scene-item .meta .date{font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .scene-item .right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .scene-item .money-pill{
+    color:var(--s2);
+    font-size:11.5px;
+    padding:5px 8px;
+  }
+  .scene-item .score-pill{
+    font-size:13px;
+    font-weight:800;
+    color:var(--accent);
+    background:var(--surface-2);
+    padding:5px 10px;
+    border-radius:20px;
+  }
+  .scene-item .del{
+    background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;padding:4px;
+  }
+
+  .empty{
+    text-align:center;
+    padding:40px 10px;
+    color:var(--text-dim);
+    font-size:13.5px;
+  }
+
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .bar-row .bl{width:120px;font-size:11.5px;color:var(--text-dim);flex-shrink:0;}
+  .bar-track{flex:1;height:8px;background:var(--surface-2);border-radius:5px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:5px;background:var(--accent);}
+  .bar-val{width:26px;text-align:right;font-size:11.5px;font-weight:700;color:var(--text);}
+
+  .chart-legend{
+    display:flex;
+    gap:14px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .chart-legend .item{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:10.5px;
+    color:var(--text-dim);
+  }
+  .chart-legend .dot{
+    width:8px;height:8px;border-radius:50%;
+    flex-shrink:0;
+  }
+  .monthly-bars{
+    display:flex;
+    gap:16px;
+    align-items:flex-end;
+    padding-top:16px;
+  }
+  .month-group{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .month-group .bars{
+    display:flex;
+    align-items:flex-end;
+    gap:4px;
+  }
+  .bar-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .bar-value{
+    font-size:7.5px;
+    color:var(--text-dim);
+    margin-bottom:2px;
+    white-space:nowrap;
+  }
+  .month-group .bar{
+    width:9px;
+    border-radius:3px 3px 0 0;
+    min-height:2px;
+  }
+  .month-group .bar.scenes{background:var(--accent);}
+  .month-group .bar.note{background:#8E8CD8;}
+  .month-group .bar.argent{background:var(--s2);}
+  .month-group .lbl{
+    font-size:9.5px;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+
+  .text-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:8px;
+    cursor:pointer;
+  }
+  .text-card.finished{border-color:var(--s2);}
+  .text-card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .text-card-name{font-size:14.5px;font-weight:700;}
+  .text-card.finished .text-card-name{color:var(--s2);}
+  .text-card-top-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .text-card-count{
+    font-size:12px;
+    font-weight:800;
+    color:var(--accent);
+  }
+  .text-card.finished .text-card-count{color:var(--s2);}
+  .text-card .bar-track{margin-top:8px;height:6px;}
+
+  .pair-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:5px 8px;
+    color:var(--accent);
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    line-height:1;
+  }
+  .pair-selector{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed var(--border);
+  }
+  .pair-candidate{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:7px 10px;
+    color:var(--text);
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  .next-scene-chip{
+    display:block;
+    width:100%;
+    margin-top:10px;
+    padding:12px 0;
+    border-radius:10px;
+    border:1px solid var(--accent);
+    background:rgba(232,179,61,0.12);
+    color:var(--accent);
+    font-size:13.5px;
+    font-weight:800;
+    cursor:pointer;
+    text-align:center;
+  }
+
+  .pair-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .pair-card.finished{
+    border-color:var(--s2);
+    opacity:0.7;
+  }
+  .pair-card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .pair-names{
+    font-size:14px;
+    font-weight:700;
+  }
+  .pair-amp{
+    color:var(--text-dim);
+    font-weight:400;
+    margin:0 3px;
+  }
+  .pair-meta{
+    font-size:11.5px;
+    color:var(--accent);
+    font-weight:700;
+    margin-top:4px;
+  }
+  .scene-chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+  .scene-chip{
+    min-width:30px;
+    padding:6px 8px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text-dim);
+    font-size:11.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .scene-chip.checked{
+    background:var(--s2);
+    border-color:var(--s2);
+    color:#0E1A11;
+    text-decoration:line-through;
+  }
+
+  .session-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:6px;
+    font-size:12.5px;
+  }
+  .session-item .sdate{color:var(--text-dim);font-weight:600;}
+  .session-item .sres{font-weight:700;}
+  .session-item .sres .ok{color:var(--s2);}
+  .session-item .sres .no{color:var(--text-dim);}
+
+  nav.bottom{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    display:flex;
+    justify-content:center;
+  }
+  nav.bottom .inner{
+    width:100%;
+    max-width:480px;
+    display:flex;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    padding:8px 10px calc(10px + env(safe-area-inset-bottom));
+    gap:6px;
+  }
+  nav.bottom button{
+    flex:1;
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    padding:8px 0 4px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    cursor:pointer;
+    border-radius:10px;
+  }
+  nav.bottom button svg{
+    width:20px;
+    height:20px;
+    stroke:currentColor;
+    fill:none;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  nav.bottom button.active{color:var(--accent);}
+
+  .backlink{
+    background:none;border:none;color:var(--text-dim);font-size:13px;font-weight:700;
+    padding:4px 0 10px;cursor:pointer;
+  }
+
+  .goal-theme-divider{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:22px 0 10px;
+    padding-top:4px;
+    border-top:1px solid var(--border);
+  }
+  .goal-theme-divider.first{
+    margin-top:4px;
+    border-top:none;
+    padding-top:0;
+  }
+
+  .goal-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:13px 14px;
+    margin-bottom:8px;
+  }
+  .goal-card.done{border-color:var(--s2);}
+  .goal-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .goal-num{
+    font-size:10.5px;
+    color:var(--text-dim);
+    font-weight:800;
+    letter-spacing:0.04em;
+  }
+  .goal-title{
+    font-size:14px;
+    font-weight:700;
+    line-height:1.3;
+    margin-top:1px;
+  }
+  .goal-card.done .goal-title{color:var(--s2);}
+
+  .goal-check{
+    flex-shrink:0;
+    width:26px;height:26px;
+    border-radius:50%;
+    border:1.5px solid var(--border);
+    background:var(--surface-2);
+    color:transparent;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .goal-check.done{
+    background:var(--s2);
+    border-color:var(--s2);
+    color:#0E1A11;
+  }
+
+  .goal-progress-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+  }
+  .goal-tap-btn{
+    width:30px;height:30px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text);
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .goal-progress-track{
+    flex:1;
+    height:8px;
+    background:var(--surface-2);
+    border-radius:5px;
+    overflow:hidden;
+  }
+  .goal-progress-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:5px;
+  }
+  .goal-card.done .goal-progress-fill{background:var(--s2);}
+  .goal-progress-num{
+    font-size:11.5px;
+    color:var(--text-dim);
+    font-weight:700;
+    white-space:nowrap;
+    min-width:52px;
+    text-align:right;
+  }
+  .goal-manual-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+  }
+  .goal-manual-row input{
+    width:80px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:7px 9px;
+    color:var(--text);
+    font-size:13px;
+  }
+  .goal-manual-row .target-txt{
+    font-size:11.5px;
+    color:var(--text-dim);
+  }
+
+  .city-add-row{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+  }
+  .city-add-row input{
+    flex:1;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 10px;
+    color:var(--text);
+    font-size:13px;
+  }
+  .city-add-row button{
+    background:var(--accent);
+    color:#1A1508;
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-weight:800;
+    font-size:12.5px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .city-chip-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+  .city-chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:5px 6px 5px 12px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .city-chip button{
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    font-size:11px;
+    cursor:pointer;
+    padding:3px;
+  }
+
+  .list-toggle-btn{
+    display:block;
+    width:100%;
+    margin-top:10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 0;
+    color:var(--text-dim);
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .icon-trash-btn{
+    background:none;
+    border:none;
+    color:var(--accent);
+    cursor:pointer;
+    padding:6px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .icon-trash-btn svg{width:18px;height:18px;}
+  .icon-trash-btn.small svg{width:14px;height:14px;}
+  .icon-trash-btn.small{padding:4px;color:var(--text-dim);}
+
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .modal-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    width:100%;
+    max-width:340px;
+  }
+  .modal-title{
+    font-size:15px;
+    font-weight:800;
+    margin-bottom:14px;
+    text-align:center;
+  }
+  .modal-close{
+    display:block;
+    width:100%;
+    margin-top:12px;
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+    padding:8px;
+  }
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:90px;
+    transform:translateX(-50%);
+    background:var(--surface-2);
+    border:1px solid var(--accent);
+    color:var(--text);
+    padding:10px 18px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-flex">
+      <div class="topbar-left">
+        <h1 onclick="toggleBackupModal()" style="cursor:pointer;">Back<span>stage</span></h1>
+        <div class="rating-stars-btn" onclick="toggleCollapse('rating-detail')">
+          <div class="rating-stars" id="rating-stars"></div>
+        </div>
+      </div>
+      <div id="rating-detail" class="rating-detail-panel" style="display:none;">
+        <div class="rd-row"><span class="rd-label">Plateaux</span><span class="rd-value" id="rd-beaux-val">0/9</span></div>
+        <div class="rd-row"><span class="rd-label">Note</span><span class="rd-value" id="rd-note-val">0/15</span></div>
+        <div class="rd-row"><span class="rd-label">Scènes</span><span class="rd-value" id="rd-freq-val">0/15</span></div>
+        <div class="rd-row"><span class="rd-label">Argent</span><span class="rd-value" id="rd-money-val">0/500€</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ACCUEIL -->
+    <section class="view active" id="view-home">
+
+      <div class="stat-card" id="spectacle-card" style="margin-top:20px;text-align:center;">
+        <div class="big-num" id="spectacle-date" style="font-size:20px;"></div>
+      </div>
+
+      <div class="gen-row" style="margin-top:12px;">
+        <div class="stat-card gen-card" id="word-gen-card">
+          <div class="big-num" id="random-word-display" onclick="generateRandomWord()" style="font-size:22px;cursor:pointer;">—</div>
+        </div>
+        <div class="stat-card gen-card" id="number-gen-card" style="position:relative;">
+          <button class="icon-trash-btn small numgen-edit-btn" onclick="event.stopPropagation(); openNumberGenModal()" title="Changer le maximum">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          </button>
+          <div class="big-num" id="random-number-display" onclick="generateRandomNumber()" style="font-size:26px;cursor:pointer;">—</div>
+        </div>
+      </div>
+
+      <div class="btn-col" id="notion-buttons" style="margin-top:20px;">
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/TEXTES-3c91528089b78038b760f17984faebe7?source=copy_link', '_blank')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+            <span>Textes</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/Vrac-e046505013674c3bbc2c0e02fc5ac590?source=copy_link', '_blank')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><line x1="10" y1="13" x2="14" y2="13"/></svg>
+            <span>Vrac</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/Sujets-465c843f114244a89818d04925a8bccf?source=copy_link', '_blank')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><line x1="9" y1="3" x2="7" y2="21"/><line x1="17" y1="3" x2="15" y2="21"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="3" y1="15" x2="19" y2="15"/></svg>
+            <span>Sujets</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/Vid-os-45916968bd66401cb73098490739f800?source=copy_link', '_blank')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 9.5 20 7v10l-5-2.5"/></svg>
+            <span>Vidéos</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/Notes-b926964209ee43e38e453f965e827b26?source=copy_link', '_blank')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><line x1="9" y1="12" x2="20" y2="12"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>
+            <span>Notes</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/Id-es-666efd52d9514938b35d44e1251eb388?source=copy_link', '_blank')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>
+            <span>Idées</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- NOTATION -->
+    <section class="view" id="view-notation">
+
+      <div class="field" style="margin-top:20px;">
+        <label for="f-nom">Nom du plateau</label>
+        <input type="text" id="f-nom" list="plateau-names-list" placeholder="Ex : Le Sous-Sol, open mic" autocomplete="off">
+        <datalist id="plateau-names-list"></datalist>
+      </div>
+      <div class="field">
+        <label for="f-date">Date</label>
+        <input type="date" id="f-date">
+      </div>
+
+      <div class="section-label">Notation (0 à 2 par critère)</div>
+      <div id="criteria-list"></div>
+
+      <div class="section-label">Sujets</div>
+      <div id="scene-texts-list"></div>
+      <div class="field" style="display:flex;gap:8px;">
+        <input type="text" id="new-scene-text-name" placeholder="Nouveau sujet" style="flex:1;">
+        <button type="button" class="save-btn" style="padding:10px 16px;" onclick="addTextFromNotation()">+ Ajouter</button>
+      </div>
+
+      <div class="section-label">Thunes</div>
+      <div class="field" style="display:flex;gap:12px;">
+        <div style="flex:1;">
+          <label for="f-gains">Gagné (€)</label>
+          <input type="text" inputmode="decimal" id="f-gains" placeholder="0">
+        </div>
+        <div style="flex:1;">
+          <label for="f-depenses">Dépensé (€)</label>
+          <input type="text" inputmode="decimal" id="f-depenses" placeholder="0">
+        </div>
+      </div>
+
+      <div class="total-preview">
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);">Score total</div>
+          <div class="score-out"><span id="score-live">0</span> / 20</div>
+        </div>
+        <button class="save-btn" id="save-btn" disabled onclick="saveScene()">Enregistrer</button>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view" id="view-stats">
+
+      <div class="period-switch" style="margin-top:20px;">
+        <button class="period-btn active" id="period-all" onclick="setStatsMode('all')">All time</button>
+        <button class="period-btn" id="period-month" onclick="setStatsMode('month')">Par mois</button>
+        <button class="period-btn" id="period-year" onclick="setStatsMode('year')">Par année</button>
+      </div>
+      <div id="period-picker-wrap" style="display:none;margin-bottom:6px;">
+        <input type="month" id="period-month-input" style="display:none;" onchange="onPeriodMonthChange(this.value)">
+        <input type="number" id="period-year-input" placeholder="Année, ex: 2026" style="display:none;" onchange="onPeriodYearChange(this.value)">
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="big-num" id="stat-count">0</div>
+          <div class="label">Scènes notées</div>
+        </div>
+        <div class="stat-card">
+          <div class="big-num" id="stat-avg">0</div>
+          <div class="label">Score moyen / 20</div>
+        </div>
+      </div>
+
+      <div class="section-label">Argent</div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="big-num" id="stat-gains" style="color:var(--s2);">0€</div>
+          <div class="label">Total gagné</div>
+        </div>
+        <div class="stat-card">
+          <div class="big-num" id="stat-depenses" style="color:var(--s0);">0€</div>
+          <div class="label">Total dépensé</div>
+        </div>
+      </div>
+      <div class="stat-card" style="text-align:center;">
+        <div class="big-num" id="stat-net">0€</div>
+        <div class="label">Solde net</div>
+      </div>
+
+      <div class="section-label clickable" onclick="toggleCollapse('line-chart-wrap')">
+        Évolution du score <span class="chevron" id="chevron-line-chart-wrap">›</span>
+      </div>
+      <div id="line-chart-wrap" style="display:none;">
+        <div class="stat-card" style="padding-top:10px;">
+          <svg id="line-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
+        </div>
+      </div>
+
+      <div class="section-label clickable" onclick="toggleCollapse('bar-chart-wrap')">
+        Moyenne par critère <span class="chevron" id="chevron-bar-chart-wrap">›</span>
+      </div>
+      <div id="bar-chart-wrap" style="display:none;">
+        <div class="stat-card" id="bar-chart"></div>
+      </div>
+
+      <div id="monthly-outer">
+        <div class="section-label clickable" onclick="toggleCollapse('monthly-section-wrap')">
+          Vue mensuelle <span class="chevron" id="chevron-monthly-section-wrap">›</span>
+        </div>
+        <div id="monthly-section-wrap" style="display:none;">
+          <div class="stat-card" style="overflow-x:auto;">
+            <div class="chart-legend">
+              <div class="item"><span class="dot" style="background:var(--accent);"></span>Scènes</div>
+              <div class="item"><span class="dot" style="background:#8E8CD8;"></span>Note moy.</div>
+              <div class="item"><span class="dot" style="background:var(--s2);"></span>Argent gagné</div>
+            </div>
+            <div class="monthly-bars" id="monthly-bars"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label clickable" onclick="toggleCollapse('writing-progress-wrap')">
+        Progression écriture <span class="chevron" id="chevron-writing-progress-wrap">›</span>
+      </div>
+      <div id="writing-progress-wrap" style="display:none;">
+        <div class="stat-card" style="padding-top:10px;">
+          <div class="chart-legend">
+            <div class="item"><span class="dot" style="background:var(--accent);"></span>Testées (moy./session)</div>
+            <div class="item"><span class="dot" style="background:#8E8CD8;"></span>Validées (moy./session)</div>
+          </div>
+          <svg id="writing-progress-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
+        </div>
+      </div>
+
+      <div class="section-label clickable" onclick="toggleCollapse('regularity-wrap')">
+        Régularité <span class="chevron" id="chevron-regularity-wrap">›</span>
+      </div>
+      <div id="regularity-wrap" style="display:none;">
+        <div class="stat-card" style="overflow-x:auto;">
+          <div class="monthly-bars" id="regularity-bars"></div>
+        </div>
+      </div>
+
+      <div class="section-label clickable" onclick="toggleCollapse('money-evo-wrap')">
+        Argent — évolution <span class="chevron" id="chevron-money-evo-wrap">›</span>
+      </div>
+      <div id="money-evo-wrap" style="display:none;">
+        <div class="stat-card" style="padding-top:10px;">
+          <svg id="money-evo-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
+        </div>
+      </div>
+
+      <div class="section-label clickable" onclick="toggleCollapse('scene-history-wrap')">
+        Historique <span class="chevron" id="chevron-scene-history-wrap">›</span>
+      </div>
+      <div id="scene-history-wrap" style="display:none;">
+        <div id="scene-history"></div>
+      </div>
+    </section>
+
+    <!-- 33 -->
+    <section class="view" id="view-33">
+
+      <div class="stat-card" id="goals-overview" style="margin-top:20px;">
+        <div class="big-num"><span id="goals-done">0</span><span style="font-size:18px;color:var(--text-dim);">/33</span></div>
+        <div class="bar-track" style="margin-top:12px;height:10px;">
+          <div class="bar-fill" id="goals-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="section-label">La liste</div>
+      <div id="goals-list"></div>
+    </section>
+
+    <!-- TESTS -->
+    <section class="view" id="view-tests">
+
+      <!-- Sous-vue liste des textes -->
+      <div id="tests-list-view" style="margin-top:20px;">
+
+        <div class="section-label">Plan de rotation</div>
+        <div class="field" style="display:flex;gap:10px;align-items:center;">
+          <label style="font-size:11px;color:var(--text-dim);white-space:nowrap;">Nb de scènes prévues</label>
+          <input type="number" min="1" id="rotation-total-scenes" style="width:70px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;" onchange="updateRotationTotalScenes(this.value)">
+        </div>
+
+        <div id="rotation-pairs-list" style="margin-top:14px;"></div>
+
+        <div class="section-label" style="margin-top:26px;">Tous les textes</div>
+        <div class="field" style="display:flex;gap:8px;margin-top:8px;">
+          <input type="text" id="new-text-name" placeholder="Nom du nouveau texte" style="flex:1;" onkeydown="if(event.key==='Enter'){addNewText();event.preventDefault();}">
+          <button class="save-btn" style="padding:10px 16px;" onclick="addNewText()">+ Ajouter</button>
+        </div>
+        <div id="texts-list" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Sous-vue détail d'un texte -->
+      <div id="tests-detail-view" style="display:none;">
+        <button class="backlink" onclick="closeTextDetail()">‹ Tests</button>
+
+        <div class="stat-card">
+          <div class="goal-top">
+            <div>
+              <div class="rating-title" id="td-name"></div>
+              <div class="rating-sub" id="td-status"></div>
+            </div>
+            <button class="icon-trash-btn" onclick="deleteCurrentText()" title="Supprimer ce texte">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            </button>
+          </div>
+          <div class="stat-grid" style="margin-top:14px;">
+            <div class="stat-card" style="margin:0;padding:12px;">
+              <div class="big-num" id="td-validated" style="font-size:24px;">0</div>
+              <div class="label">Validées</div>
+            </div>
+            <div class="stat-card" style="margin:0;padding:12px;">
+              <div class="big-num" id="td-tested" style="font-size:24px;">0</div>
+              <div class="label">Testées</div>
+            </div>
+          </div>
+          <div class="bar-track" style="margin-top:14px;height:10px;">
+            <div class="bar-fill" id="td-progress-fill" style="width:0%"></div>
+          </div>
+          <div class="label" id="td-remaining" style="margin-top:6px;"></div>
+        </div>
+
+        <div class="section-label">Progression</div>
+        <div class="stat-card">
+          <div class="chart-legend">
+            <div class="item"><span class="dot" style="background:var(--accent);"></span>Réel</div>
+            <div class="item"><span class="dot" style="background:#8E8CD8;"></span>Référence (1/10)</div>
+          </div>
+          <svg id="text-progress-chart" viewBox="0 0 300 140" style="width:100%;height:140px;overflow:visible;"></svg>
+        </div>
+
+        <div class="section-label">Historique des sessions</div>
+        <div id="sessions-list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom">
+    <div class="inner">
+      <button id="nav-home" class="active" onclick="goto('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+        Accueil
+      </button>
+      <button id="nav-notation" onclick="goto('notation')">
+        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="5" height="7.5" rx="2.5" transform="rotate(18 11.5 6.75)"/><path d="M13.3 9.3 11 21"/><path d="M7.5 21h7"/></svg>
+        Noter
+      </button>
+      <button id="nav-stats" onclick="goto('stats')">
+        <svg viewBox="0 0 24 24"><path d="M3 21V3"/><path d="M3 21h18"/><rect x="7" y="13" width="3" height="8"/><rect x="12.5" y="9" width="3" height="12"/><rect x="18" y="5" width="3" height="16"/></svg>
+        Stats
+      </button>
+      <button id="nav-33" onclick="goto('33')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
+        33
+      </button>
+      <button id="nav-tests" onclick="goto('tests')">
+        <svg viewBox="0 0 24 24"><path d="M9 2h6"/><path d="M10 2v6.5L4.5 18a1.2 1.2 0 0 0 1 1.8h13a1.2 1.2 0 0 0 1-1.8L14 8.5V2"/><path d="M7.5 14.5h9"/></svg>
+        Tests
+      </button>
+    </div>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="backup-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeBackupModal()">
+    <div class="modal-card">
+      <div class="modal-title">Sauvegarde</div>
+      <div class="btn-col">
+        <button class="row-btn" onclick="exportBackstageData()">
+          <span>Exporter mes données</span>
+          <span class="arrow">↓</span>
+        </button>
+        <button class="row-btn" onclick="document.getElementById('import-file-input').click()">
+          <span>Importer une sauvegarde</span>
+          <span class="arrow">↑</span>
+        </button>
+        <input type="file" id="import-file-input" accept="application/json" style="display:none;" onchange="importBackstageData(this.files[0])">
+      </div>
+      <button class="modal-close" onclick="closeBackupModal()">Fermer</button>
+    </div>
+  </div>
+
+  <div id="numgen-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeNumberGenModal()">
+    <div class="modal-card">
+      <div class="modal-title">Jusqu'à combien ?</div>
+      <input type="number" min="1" id="numgen-modal-input" style="width:100%;text-align:center;font-size:20px;font-weight:800;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmNumberGenMax()">Valider</button>
+      <button class="modal-close" onclick="closeNumberGenModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Data ---------- */
+const CRITERIA = [
+  {key:'type_plateau', label:'Type de plateau', hint:''},
+  {key:'qualite_public', label:'Qualité du public', hint:''},
+  {key:'line_up', label:'Line-up', hint:''},
+  {key:'jauge', label:'Jauge', hint:''},
+  {key:'nb_personnes', label:'Nombre de personnes', hint:'0-10 = 0 · 11-50 = 1 · 50+ = 2'},
+  {key:'tests_reussis', label:'Tests réussis', hint:''},
+  {key:'plaisir', label:'Plaisir pris', hint:''},
+  {key:'rires', label:'Quantité de rires', hint:''},
+  {key:'applaudissements', label:'Applaudissements', hint:''},
+  {key:'classement', label:'Niveau par rapport aux autres', hint:''},
+];
+
+const STORE_KEY = 'backstage_scenes_v1';
+let currentAnswers = {};
+let sceneTextSelections = {};
+
+function loadScenes(){
+  try{
+    return JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+  }catch(e){ return []; }
+}
+function saveScenes(list){
+  localStorage.setItem(STORE_KEY, JSON.stringify(list));
+}
+
+/* ---------- Navigation ---------- */
+function goto(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+view).classList.add('active');
+  if(view==='home'){ renderHomeRating(); }
+  if(view==='notation') resetForm();
+  if(view==='stats') renderStats();
+  if(view==='33') renderGoals();
+  if(view==='tests'){
+    document.getElementById('tests-list-view').style.display = 'block';
+    document.getElementById('tests-detail-view').style.display = 'none';
+    currentTextId = null;
+    renderTextsList();
+    populateTextNamesDatalist();
+    renderRotationTable();
+  }
+}
+
+/* ---------- Liens Notion (privés, stockés uniquement en local) ---------- */
+/* ---------- Notation form ---------- */
+function buildCriteriaForm(){
+  const wrap = document.getElementById('criteria-list');
+  wrap.innerHTML = '';
+  CRITERIA.forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'crit';
+    div.innerHTML = `
+      <div class="crit-title">${c.label}</div>
+      ${c.hint ? `<div class="crit-hint">${c.hint}</div>` : ''}
+      <div class="score-row" data-key="${c.key}">
+        <button type="button" class="score-btn" data-v="0" onclick="setScore('${c.key}',0,this)">0</button>
+        <button type="button" class="score-btn" data-v="1" onclick="setScore('${c.key}',1,this)">1</button>
+        <button type="button" class="score-btn" data-v="2" onclick="setScore('${c.key}',2,this)">2</button>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function setScore(key, val, btn){
+  currentAnswers[key] = val;
+  const row = btn.parentElement;
+  row.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateLiveScore();
+}
+
+function updateLiveScore(){
+  const total = Object.values(currentAnswers).reduce((a,b)=>a+b,0);
+  document.getElementById('score-live').textContent = total;
+  const nom = document.getElementById('f-nom').value.trim();
+  const date = document.getElementById('f-date').value;
+  const complete = nom && date && Object.keys(currentAnswers).length === CRITERIA.length;
+  document.getElementById('save-btn').disabled = !complete;
+}
+
+function populatePlateauNames(){
+  const names = [...new Set(loadScenes().map(s => s.nom).filter(Boolean))];
+  const dl = document.getElementById('plateau-names-list');
+  dl.innerHTML = names.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
+}
+
+function resetForm(){
+  currentAnswers = {};
+  sceneTextSelections = {};
+  document.getElementById('f-nom').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-gains').value = '';
+  document.getElementById('f-depenses').value = '';
+  buildCriteriaForm();
+  populatePlateauNames();
+  populateSceneTextsList();
+  updateLiveScore();
+}
+
+function populateSceneTextsList(){
+  const texts = loadTexts();
+  const wrap = document.getElementById('scene-texts-list');
+  if(!texts.length){
+    wrap.innerHTML = `<div class="empty" style="padding:16px 6px;">Pas encore de sujet créé. Ajoute-en un ci-dessous, ou depuis l'onglet Tests.</div>`;
+    return;
+  }
+  wrap.innerHTML = texts.map(t=>{
+    const sel = sceneTextSelections[t.id];
+    const isSel = !!sel;
+    return `
+      <div class="crit" style="padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="crit-title">${escapeHtml(t.name)}</div>
+          <button type="button" class="goal-check ${isSel?'done':''}" onclick="toggleSceneText(${t.id})">✓</button>
+        </div>
+        ${isSel ? `
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <div style="flex:1;">
+              <label style="font-size:10.5px;color:var(--text-dim);">Testé</label>
+              <input type="number" min="0" value="${sel.tested||''}" oninput="updateSceneTextVal(${t.id},'tested',this.value)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-size:13px;margin-top:2px;">
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:10.5px;color:var(--text-dim);">Réussi</label>
+              <input type="number" min="0" value="${sel.validated||''}" oninput="updateSceneTextVal(${t.id},'validated',this.value)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-size:13px;margin-top:2px;">
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleSceneText(id){
+  if(sceneTextSelections[id]){
+    delete sceneTextSelections[id];
+  } else {
+    sceneTextSelections[id] = {tested:0, validated:0};
+  }
+  populateSceneTextsList();
+}
+
+function updateSceneTextVal(id, field, val){
+  let v = parseInt(val, 10);
+  if(isNaN(v) || v<0) v = 0;
+  if(!sceneTextSelections[id]) sceneTextSelections[id] = {tested:0, validated:0};
+  sceneTextSelections[id][field] = v;
+}
+
+function addTextFromNotation(){
+  const input = document.getElementById('new-scene-text-name');
+  const name = input.value.trim();
+  if(!name) return;
+  const list = loadTexts();
+  const newText = {id: Date.now(), name, sessions: []};
+  list.push(newText);
+  saveTexts(list);
+  input.value = '';
+  sceneTextSelections[newText.id] = {tested:0, validated:0};
+  populateSceneTextsList();
+}
+
+function saveScene(){
+  const nom = document.getElementById('f-nom').value.trim();
+  const date = document.getElementById('f-date').value;
+  const total = Object.values(currentAnswers).reduce((a,b)=>a+b,0);
+  const gains = parseFloat((document.getElementById('f-gains').value || '0').replace(',','.')) || 0;
+  const depenses = parseFloat((document.getElementById('f-depenses').value || '0').replace(',','.')) || 0;
+  const scene = {
+    id: Date.now(),
+    nom, date,
+    answers: {...currentAnswers},
+    total,
+    gains, depenses
+  };
+  const list = loadScenes();
+  list.push(scene);
+  saveScenes(list);
+
+  // Répercuter les sujets abordés dans l'onglet Tests
+  const texts = loadTexts();
+  Object.keys(sceneTextSelections).forEach((idStr, i)=>{
+    const id = parseInt(idStr, 10);
+    const sel = sceneTextSelections[id];
+    if(!sel || ((sel.tested||0)===0 && (sel.validated||0)===0)) return;
+    const idx = texts.findIndex(t=>t.id===id);
+    if(idx>=0){
+      texts[idx].sessions.push({
+        id: Date.now()+i,
+        date,
+        tested: sel.tested||0,
+        validated: sel.validated||0,
+        plateau: nom
+      });
+    }
+  });
+  saveTexts(texts);
+
+  renderHomeRating();
+  showToast('Scène enregistrée ✓');
+  goto('stats');
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------- Stats period filter ---------- */
+let statsFilter = {mode:'all', month:'', year:''};
+
+function setStatsMode(mode){
+  statsFilter.mode = mode;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('period-'+mode).classList.add('active');
+
+  const wrap = document.getElementById('period-picker-wrap');
+  const monthInput = document.getElementById('period-month-input');
+  const yearInput = document.getElementById('period-year-input');
+
+  if(mode === 'all'){
+    wrap.style.display = 'none';
+  } else if(mode === 'month'){
+    wrap.style.display = 'block';
+    monthInput.style.display = 'block';
+    yearInput.style.display = 'none';
+    if(!statsFilter.month){
+      statsFilter.month = new Date().toISOString().slice(0,7);
+    }
+    monthInput.value = statsFilter.month;
+  } else if(mode === 'year'){
+    wrap.style.display = 'block';
+    monthInput.style.display = 'none';
+    yearInput.style.display = 'block';
+    if(!statsFilter.year){
+      statsFilter.year = new Date().getFullYear();
+    }
+    yearInput.value = statsFilter.year;
+  }
+  renderStats();
+}
+
+function onPeriodMonthChange(val){
+  statsFilter.month = val;
+  renderStats();
+}
+function onPeriodYearChange(val){
+  statsFilter.year = val;
+  renderStats();
+}
+
+function getFilteredScenes(){
+  let list = loadScenes();
+  if(statsFilter.mode === 'month' && statsFilter.month){
+    list = list.filter(s => s.date && s.date.slice(0,7) === statsFilter.month);
+  } else if(statsFilter.mode === 'year' && statsFilter.year){
+    list = list.filter(s => s.date && s.date.slice(0,4) === String(statsFilter.year));
+  }
+  return list.slice().sort((a,b)=> a.date.localeCompare(b.date));
+}
+
+/* ---------- Stats ---------- */
+function renderStats(){
+  const list = getFilteredScenes();
+  document.getElementById('stat-count').textContent = list.length;
+  const avg = list.length ? (list.reduce((a,s)=>a+s.total,0)/list.length) : 0;
+  document.getElementById('stat-avg').textContent = avg.toFixed(1);
+
+  const totalGains = list.reduce((a,s)=>a+(s.gains||0),0);
+  const totalDepenses = list.reduce((a,s)=>a+(s.depenses||0),0);
+  const net = totalGains - totalDepenses;
+  document.getElementById('stat-gains').textContent = fmtEuro(totalGains);
+  document.getElementById('stat-depenses').textContent = fmtEuro(totalDepenses);
+  const netEl = document.getElementById('stat-net');
+  netEl.textContent = fmtEuro(net);
+  netEl.style.color = net >= 0 ? 'var(--s2)' : 'var(--s0)';
+
+  renderLineChart(list);
+  renderBarChart(list);
+  renderMonthlyChart(list);
+  renderRegularityChart(list);
+  renderMoneyEvolutionChart(list);
+  renderWritingProgressChart();
+  renderHistory(list.slice().reverse());
+}
+
+function monthLabelFr(m){
+  const names=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+  return names[m-1];
+}
+
+function renderMonthlyChart(list){
+  const outer = document.getElementById('monthly-outer');
+  if(statsFilter.mode === 'month'){
+    outer.style.display = 'none';
+    return;
+  }
+  outer.style.display = 'block';
+
+  let buckets = [];
+  if(statsFilter.mode === 'year'){
+    const y = String(statsFilter.year);
+    for(let m=1; m<=12; m++){
+      const key = y + '-' + String(m).padStart(2,'0');
+      const scenes = list.filter(s => s.date && s.date.slice(0,7) === key);
+      buckets.push({
+        label: monthLabelFr(m),
+        count: scenes.length,
+        avg: scenes.length ? scenes.reduce((a,s)=>a+s.total,0)/scenes.length : 0,
+        gains: scenes.reduce((a,s)=>a+(s.gains||0),0)
+      });
+    }
+  } else {
+    const keys = [...new Set(list.map(s=>s.date.slice(0,7)))].sort();
+    buckets = keys.map(key=>{
+      const scenes = list.filter(s => s.date.slice(0,7) === key);
+      const [y,m] = key.split('-');
+      return {
+        label: monthLabelFr(parseInt(m,10)) + " '" + y.slice(2),
+        count: scenes.length,
+        avg: scenes.length ? scenes.reduce((a,s)=>a+s.total,0)/scenes.length : 0,
+        gains: scenes.reduce((a,s)=>a+(s.gains||0),0)
+      };
+    });
+  }
+
+  const wrap = document.getElementById('monthly-bars');
+  if(!buckets.length || !buckets.some(b=>b.count>0)){
+    wrap.innerHTML = `<div class="empty">Pas encore de données pour cette période</div>`;
+    return;
+  }
+
+  const maxCount = Math.max(1, ...buckets.map(b=>b.count));
+  const maxAvg = 20;
+  const maxGains = Math.max(1, ...buckets.map(b=>b.gains));
+
+  wrap.innerHTML = buckets.map(b=>{
+    const hCount = Math.max(2, (b.count/maxCount)*90);
+    const hAvg = Math.max(2, (b.avg/maxAvg)*90);
+    const hGains = Math.max(2, (b.gains/maxGains)*90);
+    return `
+      <div class="month-group">
+        <div class="bars">
+          <div class="bar-col">
+            <span class="bar-value">${b.count}</span>
+            <div class="bar scenes" style="height:${hCount}px" title="${b.count} scène(s)"></div>
+          </div>
+          <div class="bar-col">
+            <span class="bar-value">${b.avg.toFixed(1)}</span>
+            <div class="bar note" style="height:${hAvg}px" title="Note moyenne ${b.avg.toFixed(1)}/20"></div>
+          </div>
+          <div class="bar-col">
+            <span class="bar-value">${Math.round(b.gains)}€</span>
+            <div class="bar argent" style="height:${hGains}px" title="${fmtEuro(b.gains)} gagnés"></div>
+          </div>
+        </div>
+        <div class="lbl">${b.label}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function fmtEuro(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + Math.abs(n).toLocaleString('fr-FR', {maximumFractionDigits:2}) + '€';
+}
+
+function renderLineChart(list){
+  const svg = document.getElementById('line-chart');
+  svg.innerHTML = '';
+  const ns='http://www.w3.org/2000/svg';
+  const w=300, h=130;
+  const padLeft=26, padRight=10, padTop=8, padBottom=20;
+  const chartW = w - padLeft - padRight;
+  const chartH = h - padTop - padBottom;
+
+  if(list.length < 2){
+    const t = document.createElementNS(ns,'text');
+    t.setAttribute('x', w/2); t.setAttribute('y', h/2);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('fill','#9C96A3'); t.setAttribute('font-size','11');
+    t.textContent = "Note au moins 2 scènes pour voir l'évolution";
+    svg.appendChild(t);
+    return;
+  }
+
+  // lignes de grille fines (tous les 1 point)
+  for(let v=1; v<20; v++){
+    if(v % 5 === 0) continue;
+    const y = padTop + chartH - (v/20)*chartH;
+    const minorLine = document.createElementNS(ns,'line');
+    minorLine.setAttribute('x1', padLeft); minorLine.setAttribute('x2', w-padRight);
+    minorLine.setAttribute('y1', y); minorLine.setAttribute('y2', y);
+    minorLine.setAttribute('stroke', '#252228'); minorLine.setAttribute('stroke-width','1');
+    svg.appendChild(minorLine);
+  }
+
+  // gridlines + y-axis (échelons de note, repères tous les 5)
+  [0,5,10,15,20].forEach(v=>{
+    const y = padTop + chartH - (v/20)*chartH;
+    const gline = document.createElementNS(ns,'line');
+    gline.setAttribute('x1', padLeft); gline.setAttribute('x2', w-padRight);
+    gline.setAttribute('y1', y); gline.setAttribute('y2', y);
+    gline.setAttribute('stroke', '#332F37'); gline.setAttribute('stroke-width','1');
+    svg.appendChild(gline);
+
+    const label = document.createElementNS(ns,'text');
+    label.setAttribute('x', padLeft-6); label.setAttribute('y', y+3);
+    label.setAttribute('text-anchor','end'); label.setAttribute('font-size','7');
+    label.setAttribute('fill','#9C96A3');
+    label.textContent = v;
+    svg.appendChild(label);
+  });
+
+  // x-axis baseline (temporalité)
+  const axis = document.createElementNS(ns,'line');
+  axis.setAttribute('x1', padLeft); axis.setAttribute('x2', w-padRight);
+  axis.setAttribute('y1', padTop+chartH); axis.setAttribute('y2', padTop+chartH);
+  axis.setAttribute('stroke', '#4A4550'); axis.setAttribute('stroke-width','1');
+  svg.appendChild(axis);
+
+  const pts = list.map((s,i)=>{
+    const x = padLeft + (i/(list.length-1))*chartW;
+    const y = padTop + chartH - (s.total/20)*chartH;
+    return [x,y];
+  });
+
+  const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const line = document.createElementNS(ns,'path');
+  line.setAttribute('d',path);
+  line.setAttribute('fill','none');
+  line.setAttribute('stroke','#E8B33D');
+  line.setAttribute('stroke-width','2.5');
+  line.setAttribute('stroke-linecap','round');
+  line.setAttribute('stroke-linejoin','round');
+  svg.appendChild(line);
+
+  pts.forEach(p=>{
+    const c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r','3');
+    c.setAttribute('fill','#E8B33D');
+    svg.appendChild(c);
+  });
+
+  // x labels : premier, milieu, dernier
+  const midIdx = Math.floor((list.length-1)/2);
+  const idxToLabel = [...new Set([0, midIdx, list.length-1])];
+  idxToLabel.forEach(i=>{
+    const [x] = pts[i];
+    const anchor = i===0 ? 'start' : (i===list.length-1 ? 'end' : 'middle');
+    const txt = document.createElementNS(ns,'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', h-4);
+    txt.setAttribute('text-anchor', anchor);
+    txt.setAttribute('font-size','7');
+    txt.setAttribute('fill','#9C96A3');
+    txt.textContent = formatDate(list[i].date);
+    svg.appendChild(txt);
+  });
+}
+
+/* ---------- Régularité & Argent (buckets hebdomadaires) ---------- */
+function formatShortDateFr(d){
+  const months=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+  return d.getDate()+' '+months[d.getMonth()];
+}
+
+function computeWeekBuckets(list){
+  if(!list.length) return [];
+  let rangeStart, rangeEnd;
+  const now = new Date();
+  if(statsFilter.mode === 'month' && statsFilter.month){
+    const [y,m] = statsFilter.month.split('-').map(Number);
+    rangeStart = new Date(y, m-1, 1);
+    rangeEnd = new Date(y, m, 0);
+  } else if(statsFilter.mode === 'year' && statsFilter.year){
+    rangeStart = new Date(Number(statsFilter.year), 0, 1);
+    rangeEnd = new Date(Number(statsFilter.year), 11, 31);
+  } else {
+    const dates = list.map(s=>new Date(s.date)).sort((a,b)=>a-b);
+    rangeStart = dates[0];
+    rangeEnd = now;
+  }
+
+  const buckets = [];
+  let cursor = new Date(rangeStart);
+  let guard = 0;
+  while(cursor <= rangeEnd && guard < 400){
+    const weekStart = new Date(cursor);
+    const weekEnd = new Date(cursor); weekEnd.setDate(weekEnd.getDate()+6);
+    const inWeek = list.filter(s=>{
+      const d = new Date(s.date);
+      return d >= weekStart && d <= weekEnd;
+    });
+    buckets.push({
+      label: formatShortDateFr(weekStart),
+      count: inWeek.length,
+      gains: inWeek.reduce((a,s)=>a+(s.gains||0),0)
+    });
+    cursor.setDate(cursor.getDate()+7);
+    guard++;
+  }
+  return buckets;
+}
+
+function renderRegularityChart(list){
+  const wrap = document.getElementById('regularity-bars');
+  const buckets = computeWeekBuckets(list);
+  if(!buckets.length){
+    wrap.innerHTML = `<div class="empty">Pas encore de données pour cette période</div>`;
+    return;
+  }
+  const maxCount = Math.max(1, ...buckets.map(b=>b.count));
+  wrap.innerHTML = buckets.map(b=>{
+    const h = Math.max(2, (b.count/maxCount)*90);
+    return `
+      <div class="month-group">
+        <div class="bars">
+          <div class="bar-col">
+            <span class="bar-value">${b.count}</span>
+            <div class="bar scenes" style="height:${h}px" title="${b.count} scène(s) semaine du ${b.label}"></div>
+          </div>
+        </div>
+        <div class="lbl">${b.label}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMoneyEvolutionChart(list){
+  const svg = document.getElementById('money-evo-chart');
+  svg.innerHTML = '';
+  const ns='http://www.w3.org/2000/svg';
+  const w=300, h=130;
+  const padLeft=32, padRight=10, padTop=10, padBottom=20;
+  const chartW = w-padLeft-padRight, chartH = h-padTop-padBottom;
+  const buckets = computeWeekBuckets(list);
+
+  if(!buckets.length){
+    const t = document.createElementNS(ns,'text');
+    t.setAttribute('x', w/2); t.setAttribute('y', h/2);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('fill','#9C96A3'); t.setAttribute('font-size','11');
+    t.textContent = "Pas encore de données pour cette période";
+    svg.appendChild(t);
+    return;
+  }
+
+  const maxGains = Math.max(1, ...buckets.map(b=>b.gains));
+  const niceMax = Math.ceil(maxGains/50)*50 || 50;
+
+  [0, niceMax/2, niceMax].forEach(v=>{
+    const y = padTop + chartH - (v/niceMax)*chartH;
+    const gline = document.createElementNS(ns,'line');
+    gline.setAttribute('x1', padLeft); gline.setAttribute('x2', w-padRight);
+    gline.setAttribute('y1', y); gline.setAttribute('y2', y);
+    gline.setAttribute('stroke', '#332F37'); gline.setAttribute('stroke-width','1');
+    svg.appendChild(gline);
+    const label = document.createElementNS(ns,'text');
+    label.setAttribute('x', padLeft-6); label.setAttribute('y', y+3);
+    label.setAttribute('text-anchor','end'); label.setAttribute('font-size','7'); label.setAttribute('fill','#9C96A3');
+    label.textContent = Math.round(v)+'€';
+    svg.appendChild(label);
+  });
+
+  const axis = document.createElementNS(ns,'line');
+  axis.setAttribute('x1', padLeft); axis.setAttribute('x2', w-padRight);
+  axis.setAttribute('y1', padTop+chartH); axis.setAttribute('y2', padTop+chartH);
+  axis.setAttribute('stroke', '#4A4550'); axis.setAttribute('stroke-width','1');
+  svg.appendChild(axis);
+
+  const pts = buckets.map((b,i)=>{
+    const x = padLeft + (buckets.length>1 ? (i/(buckets.length-1))*chartW : chartW/2);
+    const y = padTop + chartH - (b.gains/niceMax)*chartH;
+    return [x,y];
+  });
+  const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const line = document.createElementNS(ns,'path');
+  line.setAttribute('d', path);
+  line.setAttribute('fill','none'); line.setAttribute('stroke','#6FA97C');
+  line.setAttribute('stroke-width','2.5'); line.setAttribute('stroke-linecap','round'); line.setAttribute('stroke-linejoin','round');
+  svg.appendChild(line);
+  pts.forEach(p=>{
+    const c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r','3'); c.setAttribute('fill','#6FA97C');
+    svg.appendChild(c);
+  });
+
+  const midIdx = Math.floor((buckets.length-1)/2);
+  const idxs = [...new Set([0, midIdx, buckets.length-1])];
+  idxs.forEach(i=>{
+    const [x] = pts[i];
+    const anchor = i===0 ? 'start' : (i===buckets.length-1 ? 'end' : 'middle');
+    const txt = document.createElementNS(ns,'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', h-4);
+    txt.setAttribute('text-anchor', anchor); txt.setAttribute('font-size','7'); txt.setAttribute('fill','#9C96A3');
+    txt.textContent = buckets[i].label;
+    svg.appendChild(txt);
+  });
+}
+
+/* ---------- Progression écriture (toutes sessions, tous textes) ---------- */
+function computeWritingProgressBuckets(){
+  const texts = loadTexts();
+  let allSessions = [];
+  texts.forEach(t => (t.sessions||[]).forEach(s => allSessions.push(s)));
+  if(!allSessions.length) return [];
+  allSessions.sort((a,b)=> a.date.localeCompare(b.date));
+  const keys = [...new Set(allSessions.map(s=>s.date.slice(0,7)))].sort();
+  return keys.map(key=>{
+    const sess = allSessions.filter(s=>s.date.slice(0,7)===key);
+    const avgTested = sess.reduce((a,s)=>a+(s.tested||0),0)/sess.length;
+    const avgValidated = sess.reduce((a,s)=>a+(s.validated||0),0)/sess.length;
+    const [y,m] = key.split('-');
+    return {label: monthLabelFr(parseInt(m,10))+" '"+y.slice(2), avgTested, avgValidated};
+  });
+}
+
+function renderWritingProgressChart(){
+  const svg = document.getElementById('writing-progress-chart');
+  svg.innerHTML = '';
+  const ns='http://www.w3.org/2000/svg';
+  const w=300, h=130;
+  const padLeft=26, padRight=10, padTop=10, padBottom=20;
+  const chartW = w-padLeft-padRight, chartH = h-padTop-padBottom;
+  const buckets = computeWritingProgressBuckets();
+
+  if(buckets.length < 2){
+    const t = document.createElementNS(ns,'text');
+    t.setAttribute('x', w/2); t.setAttribute('y', h/2);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('fill','#9C96A3'); t.setAttribute('font-size','11');
+    t.textContent = "Ajoute des sessions sur au moins 2 mois pour voir ta progression";
+    svg.appendChild(t);
+    return;
+  }
+
+  const maxVal = Math.max(1, ...buckets.map(b=>Math.max(b.avgTested,b.avgValidated))) * 1.15;
+
+  [0, maxVal/2, maxVal].forEach(v=>{
+    const y = padTop + chartH - (v/maxVal)*chartH;
+    const gline = document.createElementNS(ns,'line');
+    gline.setAttribute('x1', padLeft); gline.setAttribute('x2', w-padRight);
+    gline.setAttribute('y1', y); gline.setAttribute('y2', y);
+    gline.setAttribute('stroke', '#332F37'); gline.setAttribute('stroke-width','1');
+    svg.appendChild(gline);
+    const label = document.createElementNS(ns,'text');
+    label.setAttribute('x', padLeft-6); label.setAttribute('y', y+3);
+    label.setAttribute('text-anchor','end'); label.setAttribute('font-size','7'); label.setAttribute('fill','#9C96A3');
+    label.textContent = v.toFixed(1);
+    svg.appendChild(label);
+  });
+
+  const axis = document.createElementNS(ns,'line');
+  axis.setAttribute('x1', padLeft); axis.setAttribute('x2', w-padRight);
+  axis.setAttribute('y1', padTop+chartH); axis.setAttribute('y2', padTop+chartH);
+  axis.setAttribute('stroke', '#4A4550'); axis.setAttribute('stroke-width','1');
+  svg.appendChild(axis);
+
+  function drawSeries(key, color){
+    const pts = buckets.map((b,i)=>{
+      const x = padLeft + (i/(buckets.length-1))*chartW;
+      const y = padTop + chartH - (b[key]/maxVal)*chartH;
+      return [x,y];
+    });
+    const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const line = document.createElementNS(ns,'path');
+    line.setAttribute('d', path);
+    line.setAttribute('fill','none'); line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width','2.5'); line.setAttribute('stroke-linecap','round'); line.setAttribute('stroke-linejoin','round');
+    svg.appendChild(line);
+    pts.forEach(p=>{
+      const c = document.createElementNS(ns,'circle');
+      c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r','2.8'); c.setAttribute('fill',color);
+      svg.appendChild(c);
+    });
+  }
+  drawSeries('avgTested', '#E8B33D');
+  drawSeries('avgValidated', '#8E8CD8');
+
+  const midIdx = Math.floor((buckets.length-1)/2);
+  const idxs = [...new Set([0, midIdx, buckets.length-1])];
+  idxs.forEach(i=>{
+    const x = padLeft + (i/(buckets.length-1))*chartW;
+    const anchor = i===0 ? 'start' : (i===buckets.length-1 ? 'end' : 'middle');
+    const txt = document.createElementNS(ns,'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', h-4);
+    txt.setAttribute('text-anchor', anchor); txt.setAttribute('font-size','7'); txt.setAttribute('fill','#9C96A3');
+    txt.textContent = buckets[i].label;
+    svg.appendChild(txt);
+  });
+}
+
+function renderBarChart(list){
+  const wrap = document.getElementById('bar-chart');
+  wrap.innerHTML = '';
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty">Aucune donnée pour l'instant</div>`;
+    return;
+  }
+  CRITERIA.forEach(c=>{
+    const vals = list.map(s=>s.answers[c.key] ?? 0);
+    const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+    const pct = (avg/2)*100;
+    const row = document.createElement('div');
+    row.className='bar-row';
+    row.innerHTML = `
+      <div class="bl">${c.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="bar-val">${avg.toFixed(1)}</div>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+function renderHistory(list){
+  const wrap = document.getElementById('scene-history');
+  wrap.innerHTML = '';
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty">Pas encore de scène notée.<br>Va dans "Noter" pour commencer.</div>`;
+    return;
+  }
+  list.forEach(s=>{
+    const div = document.createElement('div');
+    div.className='scene-item';
+    const gains = s.gains || 0;
+    const depenses = s.depenses || 0;
+    const moneyPill = (gains || depenses)
+      ? `<div class="score-pill money-pill">${gains ? '+'+fmtEuro(gains):''}${(gains&&depenses)?' / ':''}${depenses ? '-'+fmtEuro(depenses):''}</div>`
+      : '';
+    div.innerHTML = `
+      <div class="meta">
+        <div class="nom">${escapeHtml(s.nom)}</div>
+        <div class="date">${formatDate(s.date)}</div>
+      </div>
+      <div class="right">
+        <div class="score-pill">${s.total}/20</div>
+        ${moneyPill}
+        <button class="del" onclick="deleteScene(${s.id})">✕</button>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function deleteScene(id){
+  const list = loadScenes().filter(s=>s.id!==id);
+  saveScenes(list);
+  renderStats();
+  renderHomeRating();
+}
+
+function formatDate(d){
+  if(!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------- 33 ---------- */
+// type: 'tap' (bouton +/- vers une cible), 'manual' (saisie manuelle vers une cible), 'boolean' (fait / pas fait)
+const GOALS_DEFAULT = [
+  {type:'divider', title:'Scènes & lieux'},
+  {key:'g1',  title:'Aller 30 fois au Panam',            type:'tap',     target:30},
+  {key:'g2',  title:'Aller 30 fois au Jokes',             type:'tap',     target:30},
+  {key:'g3',  title:'Aller 30 fois au Barbès',            type:'tap',     target:30},
+  {key:'g4',  title:'Aller 30 fois chez Prince',          type:'tap',     target:30},
+  {key:'g5',  title:'Aller 30 fois au Golden',            type:'tap',     target:30},
+  {key:'g6',  title:'Aller 30 fois au Café Oscar',        type:'tap',     target:30},
+  {key:'g7',  title:'Aller 30 fois au Red',               type:'tap',     target:30},
+  {key:'g8',  title:'Aller 30 fois au Fridge',            type:'tap',     target:30},
+  {key:'g18', title:'Aller 30 fois au Jamel Comedy Club', type:'tap',     target:30},
+  {key:'g29', title:'Faire le Feald 3 fois',              type:'tap',     target:3},
+
+  {type:'divider', title:'Régularité sur scène'},
+  {key:'g17', title:"Aller tous les soirs dans des CC pendant 1 mois", type:'tap', target:30, unit:'jours'},
+  {key:'g23', title:"Aller à tous les plateaux de l'agenda", type:'boolean'},
+  {key:'g20', title:'Jouer dans 10 villes de France',     type:'city_list', target:10, itemLabel:'Nom de la ville'},
+
+  {type:'divider', title:'Écriture & matière'},
+  {key:'g12', title:'Avoir 15 minutes serein',            type:'boolean'},
+  {key:'g16', title:'Avoir 1h',                           type:'boolean'},
+  {key:'g26', title:"Faire 1 semaine d'écriture intensive", type:'boolean'},
+  {key:'g31', title:"Étude d'écriture de 10 spectacles (Yacine Belhoussine)", type:'tap', target:10},
+  {key:'g32', title:'Tester 30 nouveaux sujets',          type:'tap',     target:30},
+  {key:'g9',  title:'Publier 15 minutes sur les réseaux', type:'manual',  target:15, unit:'min'},
+
+  {type:'divider', title:'Promo & visibilité'},
+  {key:'g10', title:'Publier 30 vidéos',                  type:'tap',     target:30},
+  {key:'g24', title:'Faire des flyers',                   type:'boolean'},
+  {key:'g33', title:'Avoir plus de 1111 abonnés',         type:'manual',  target:1111, unit:'abonnés'},
+
+  {type:'divider', title:'Réseau pro & compétitions'},
+  {key:'g11', title:'Sélection Tremplin',                 type:'boolean'},
+  {key:'g25', title:'S\'inscrire à 10 concours',          type:'tap',     target:10},
+  {key:'g13', title:'Envoyer un message à Kader',         type:'boolean'},
+  {key:'g14', title:'Envoyer un message à Coline',        type:'boolean'},
+  {key:'g15', title:'Envoyer un message à Yvan Attal',    type:'boolean'},
+
+  {type:'divider', title:'Apprentissage & culture'},
+  {key:'g19', title:'Aller au spectacle de 10 potes',     type:'tap',     target:10},
+  {key:'g21', title:'Regarder 50 spectacles',             type:'tap',     target:50},
+  {key:'g22', title:'Capter 20 humoristes',                type:'name_list', target:20, itemLabel:"Nom de l'humoriste"},
+
+  {type:'divider', title:'Vie perso & discipline'},
+  {key:'g27', title:'Arrêter le cannabis',                type:'boolean'},
+  {key:'g28', title:'Faire MC',                           type:'boolean'},
+  {key:'g30', title:'Trouver un CDI',                     type:'boolean'},
+];
+
+const GOALS_STORE_KEY = 'backstage_goals_v1';
+
+function loadGoalsState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(GOALS_STORE_KEY) || '{}');
+    return saved;
+  }catch(e){ return {}; }
+}
+function saveGoalsState(state){
+  localStorage.setItem(GOALS_STORE_KEY, JSON.stringify(state));
+}
+
+const expandedNameLists = new Set();
+
+function isGoalDone(g, state){
+  const s = state[g.key] || {};
+  if(g.type === 'boolean') return !!s.done;
+  if(g.type === 'city_list' || g.type === 'name_list') return (s.items || []).length >= g.target;
+  return (s.value || 0) >= g.target;
+}
+
+function renderGoals(){
+  const state = loadGoalsState();
+  const list = document.getElementById('goals-list');
+  list.innerHTML = '';
+
+  let doneCount = 0;
+
+  GOALS_DEFAULT.forEach((g, i)=>{
+    if(g.type === 'divider'){
+      const div = document.createElement('div');
+      div.className = 'goal-theme-divider' + (i===0 ? ' first' : '');
+      div.textContent = g.title;
+      list.appendChild(div);
+      return;
+    }
+
+    const s = state[g.key] || {value:0, done:false};
+    const done = isGoalDone(g, state);
+    if(done) doneCount++;
+
+    const card = document.createElement('div');
+    card.className = 'goal-card' + (done ? ' done' : '');
+
+    let controlHtml = '';
+    if(g.type === 'boolean'){
+      controlHtml = `
+        <button class="goal-check ${done?'done':''}" onclick="toggleBoolGoal('${g.key}')">✓</button>
+      `;
+    }
+
+    let bodyHtml = '';
+    if(g.type === 'tap'){
+      const val = s.value || 0;
+      const pct = Math.min(100, (val/g.target)*100);
+      bodyHtml = `
+        <div class="goal-progress-row">
+          <button class="goal-tap-btn" onclick="bumpGoal('${g.key}', -1, ${g.target})">−</button>
+          <div class="goal-progress-track"><div class="goal-progress-fill" style="width:${pct}%"></div></div>
+          <button class="goal-tap-btn" onclick="bumpGoal('${g.key}', 1, ${g.target})">+</button>
+          <div class="goal-progress-num">${val}/${g.target}${g.unit?(' '+g.unit):''}</div>
+        </div>
+      `;
+    } else if(g.type === 'manual'){
+      const val = s.value || 0;
+      bodyHtml = `
+        <div class="goal-manual-row">
+          <input type="number" min="0" value="${val}" onchange="setManualGoal('${g.key}', this.value, ${g.target})">
+          <span class="target-txt">/ ${g.target} ${g.unit||''}</span>
+        </div>
+      `;
+    } else if(g.type === 'city_list' || g.type === 'name_list'){
+      const items = s.items || [];
+      const pct = Math.min(100, (items.length/g.target)*100);
+      const expanded = expandedNameLists.has(g.key);
+      const chips = items.map((c,idx)=>`
+        <div class="city-chip">${escapeHtml(c)}<button onclick="removeListItem('${g.key}', ${idx})">✕</button></div>
+      `).join('');
+      bodyHtml = `
+        <div class="goal-progress-row">
+          <div class="goal-progress-track"><div class="goal-progress-fill" style="width:${pct}%"></div></div>
+          <div class="goal-progress-num">${items.length}/${g.target}</div>
+        </div>
+        <div class="city-add-row">
+          <input type="text" placeholder="${g.itemLabel || 'Nom'}" id="list-input-${g.key}" onkeydown="if(event.key==='Enter'){addListItem('${g.key}', ${g.target});event.preventDefault();}">
+          <button onclick="addListItem('${g.key}', ${g.target})">Ajouter</button>
+        </div>
+        ${items.length ? `
+          <button class="list-toggle-btn" onclick="toggleNameList('${g.key}')">${expanded ? 'Cacher la liste' : 'Voir la liste'} (${items.length})</button>
+          ${expanded ? `<div class="city-chip-list">${chips}</div>` : ''}
+        ` : ''}
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="goal-top">
+        <div>
+          <div class="goal-title">${g.title}</div>
+        </div>
+        ${controlHtml}
+      </div>
+      ${bodyHtml}
+    `;
+    list.appendChild(card);
+  });
+
+  document.getElementById('goals-done').textContent = doneCount;
+  document.getElementById('goals-progress-fill').style.width = ((doneCount/33)*100)+'%';
+}
+
+function toggleNameList(key){
+  if(expandedNameLists.has(key)) expandedNameLists.delete(key);
+  else expandedNameLists.add(key);
+  renderGoals();
+}
+
+function toggleBoolGoal(key){
+  const state = loadGoalsState();
+  const s = state[key] || {};
+  s.done = !s.done;
+  state[key] = s;
+  saveGoalsState(state);
+  renderGoals();
+}
+
+function bumpGoal(key, delta, target){
+  const state = loadGoalsState();
+  const s = state[key] || {value:0};
+  s.value = Math.max(0, Math.min(target, (s.value||0) + delta));
+  state[key] = s;
+  saveGoalsState(state);
+  renderGoals();
+}
+
+function addListItem(key, target){
+  const input = document.getElementById('list-input-'+key);
+  const name = input.value.trim();
+  if(!name) return;
+  const state = loadGoalsState();
+  const s = state[key] || {items:[]};
+  if(!s.items) s.items = [];
+  if(s.items.length >= target) return;
+  s.items.push(name);
+  state[key] = s;
+  saveGoalsState(state);
+  renderGoals();
+}
+
+function removeListItem(key, index){
+  const state = loadGoalsState();
+  const s = state[key] || {items:[]};
+  s.items.splice(index, 1);
+  state[key] = s;
+  saveGoalsState(state);
+  renderGoals();
+}
+
+function setManualGoal(key, rawVal, target){
+  const state = loadGoalsState();
+  const s = state[key] || {value:0};
+  let v = parseInt(rawVal, 10);
+  if(isNaN(v) || v < 0) v = 0;
+  s.value = v;
+  state[key] = s;
+  saveGoalsState(state);
+  renderGoals();
+}
+
+function toggleCollapse(id){
+  const content = document.getElementById(id);
+  const chevron = document.getElementById('chevron-'+id);
+  const isHidden = content.style.display === 'none' || content.style.display === '';
+  content.style.display = isHidden ? 'block' : 'none';
+  if(chevron) chevron.classList.toggle('open', isHidden);
+}
+
+/* ---------- Rating / niveau ---------- */
+const STAR_PATH = "M12 2.5l2.95 6.28 6.93.72-5.16 4.76 1.46 6.84L12 17.6l-6.18 3.5 1.46-6.84L2.12 9.5l6.93-.72z";
+
+function computeStarRating(){
+  const scenes = loadScenes();
+  const now = new Date();
+  const cutoff60 = new Date(now); cutoff60.setDate(cutoff60.getDate()-60);
+  const todayEnd = new Date(now); todayEnd.setHours(23,59,59,999);
+
+  const recent60 = scenes.filter(s => {
+    if(!s.date) return false;
+    const d = new Date(s.date);
+    return d >= cutoff60 && d <= todayEnd;
+  });
+
+  const beauxCountRaw = recent60.reduce((a,s)=>{
+    const v = s.answers && s.answers.type_plateau;
+    if(v === 2) return a + 1;
+    if(v === 1) return a + 0.5;
+    return a;
+  }, 0);
+  const beauxPerMonth = beauxCountRaw / 2;
+  const ratioBeaux = Math.min(beauxPerMonth/9, 1);
+
+  const avgNote = recent60.length ? recent60.reduce((a,s)=>a+s.total,0)/recent60.length : 0;
+  const ratioNote = Math.min(avgNote/15, 1);
+
+  const scenesPerMonth = recent60.length / 2;
+  const ratioFreq = Math.min(scenesPerMonth/15, 1);
+
+  const gainsPerMonth = recent60.reduce((a,s)=>a+(s.gains||0),0) / 2;
+  const ratioMoney = Math.min(gainsPerMonth/500, 1);
+
+  const overall = (ratioBeaux + ratioNote + ratioFreq + ratioMoney) / 4;
+  const stars = Math.round(overall*5*2)/2;
+
+  return {stars, ratioBeaux, ratioNote, ratioFreq, ratioMoney, beauxPerMonth, avgNote, scenesPerMonth, gainsPerMonth};
+}
+
+function renderStarsRow(containerId, stars){
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+  for(let i=1; i<=5; i++){
+    const frac = Math.max(0, Math.min(1, stars - (i-1)));
+    const svg = document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 24 24');
+    const uid = containerId+'-clip-'+i;
+
+    const defs = document.createElementNS(ns,'defs');
+    const clip = document.createElementNS(ns,'clipPath');
+    clip.setAttribute('id', uid);
+    clip.setAttribute('clipPathUnits','objectBoundingBox');
+    const rect = document.createElementNS(ns,'rect');
+    rect.setAttribute('x','0'); rect.setAttribute('y','0');
+    rect.setAttribute('width', frac); rect.setAttribute('height','1');
+    clip.appendChild(rect);
+    defs.appendChild(clip);
+    svg.appendChild(defs);
+
+    const bg = document.createElementNS(ns,'path');
+    bg.setAttribute('d', STAR_PATH);
+    bg.setAttribute('fill', 'none');
+    bg.setAttribute('stroke', 'var(--border)');
+    bg.setAttribute('stroke-width','1.3');
+    svg.appendChild(bg);
+
+    if(frac > 0){
+      const fg = document.createElementNS(ns,'path');
+      fg.setAttribute('d', STAR_PATH);
+      fg.setAttribute('fill', 'var(--accent)');
+      fg.setAttribute('clip-path', `url(#${uid})`);
+      svg.appendChild(fg);
+    }
+
+    container.appendChild(svg);
+  }
+}
+
+function renderHomeRating(){
+  const r = computeStarRating();
+  renderStarsRow('rating-stars', r.stars);
+
+  document.getElementById('rd-beaux-val').textContent = `${r.beauxPerMonth.toFixed(1)}/9`;
+  document.getElementById('rd-note-val').textContent = `${r.avgNote.toFixed(1)}/15`;
+  document.getElementById('rd-freq-val').textContent = `${r.scenesPerMonth.toFixed(1)}/15`;
+  document.getElementById('rd-money-val').textContent = `${Math.round(r.gainsPerMonth)}/500€`;
+
+  renderSpectacleCard();
+}
+
+const SPECTACLE_TARGET = 400;
+
+function computeSpectacleEstimate(){
+  const texts = loadTexts();
+  let allSessions = [];
+  texts.forEach(t => (t.sessions||[]).forEach(s => allSessions.push(s)));
+
+  const totalValidated = allSessions.reduce((a,s)=>a+(s.validated||0),0);
+  const remaining = Math.max(0, SPECTACLE_TARGET - totalValidated);
+
+  const now = new Date();
+  let ratePerDay = 0;
+  if(allSessions.length){
+    const dates = allSessions.filter(s=>s.date).map(s=>new Date(s.date)).sort((a,b)=>a-b);
+    const firstDate = dates[0];
+    const daysSinceStart = Math.max(1, Math.round((now - firstDate) / (1000*60*60*24)));
+    ratePerDay = totalValidated / daysSinceStart;
+  }
+
+  let projectedDate = null;
+  if(ratePerDay > 0 && remaining > 0){
+    const daysNeeded = remaining / ratePerDay;
+    projectedDate = new Date(now);
+    projectedDate.setDate(projectedDate.getDate() + Math.ceil(daysNeeded));
+  }
+
+  return {totalValidated, remaining, target: SPECTACLE_TARGET, ratePerDay, projectedDate};
+}
+
+function renderSpectacleCard(){
+  const dateEl = document.getElementById('spectacle-date');
+  if(!dateEl) return;
+
+  const r = computeSpectacleEstimate();
+
+  if(r.totalValidated >= r.target){
+    dateEl.textContent = 'Spectacle complet ! 🎉';
+  } else if(r.ratePerDay <= 0){
+    dateEl.textContent = 'Pas assez de rythme récent pour estimer';
+  } else {
+    const dateStr = r.projectedDate.toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+    dateEl.textContent = dateStr;
+  }
+}
+
+/* ---------- Tests (progression des textes) ---------- */
+const TEXTS_STORE_KEY = 'backstage_texts_v1';
+const TEXT_TARGET = 12;
+const TEXT_MIN = 9;
+const SUCCESS_RATE = 0.1;
+
+let currentTextId = null;
+
+function loadTexts(){
+  try{ return JSON.parse(localStorage.getItem(TEXTS_STORE_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+function saveTexts(list){
+  localStorage.setItem(TEXTS_STORE_KEY, JSON.stringify(list));
+}
+
+function textTotals(text){
+  const tested = text.sessions.reduce((a,s)=>a+(s.tested||0),0);
+  const validated = text.sessions.reduce((a,s)=>a+(s.validated||0),0);
+  return {tested, validated};
+}
+
+/* ---------- Plan de rotation (paires de textes) ---------- */
+const ROTATION_STORE_KEY = 'backstage_rotation_v1';
+
+function loadRotation(){
+  let data;
+  try{
+    const saved = JSON.parse(localStorage.getItem(ROTATION_STORE_KEY) || 'null');
+    data = (saved && typeof saved === 'object') ? saved : {totalScenes: 40, pairs: []};
+  }catch(e){
+    data = {totalScenes: 40, pairs: []};
+  }
+  if(!data.totalScenes) data.totalScenes = 40;
+  if(!Array.isArray(data.pairs)) data.pairs = [];
+
+  // Migration : donne un créneau fixe et permanent à chaque paire qui n'en a pas encore.
+  let needsSave = false;
+  const usedSlots = new Set(data.pairs.filter(p=>p.slot).map(p=>p.slot));
+  data.pairs.forEach(p=>{
+    if(!p.slot){
+      let s = 1;
+      while(usedSlots.has(s)) s++;
+      p.slot = s;
+      usedSlots.add(s);
+      needsSave = true;
+    }
+  });
+  if(!data.slotCount){
+    data.slotCount = Math.max(0, ...data.pairs.map(p=>p.slot||0));
+    needsSave = true;
+  }
+  if(needsSave) saveRotation(data);
+  return data;
+}
+function saveRotation(data){
+  localStorage.setItem(ROTATION_STORE_KEY, JSON.stringify(data));
+}
+
+function nextFreeSlot(data){
+  const used = new Set(data.pairs.map(p=>p.slot));
+  let s = 1;
+  while(used.has(s)) s++;
+  if(s > data.slotCount) data.slotCount = s;
+  return s;
+}
+
+function computeRotationScenes(slot, slotCount, totalScenes){
+  const scenes = [];
+  let s = slot;
+  while(s <= totalScenes){ scenes.push(s); s += slotCount; }
+  return scenes;
+}
+
+function getTextName(id){
+  const t = loadTexts().find(t=>t.id===id);
+  return t ? t.name : '?';
+}
+
+function deleteRotationPair(pairId){
+  const data = loadRotation();
+  data.pairs = data.pairs.filter(p=>p.id!==pairId);
+  saveRotation(data);
+  renderRotationTable();
+  renderTextsList();
+}
+
+function updateRotationTotalScenes(val){
+  let v = parseInt(val, 10);
+  if(isNaN(v) || v<1) v = 40;
+  const data = loadRotation();
+  data.totalScenes = v;
+  saveRotation(data);
+  renderRotationTable();
+}
+
+function toggleRotationCheck(pairId, sceneNum){
+  const data = loadRotation();
+  const pair = data.pairs.find(p=>p.id===pairId);
+  if(!pair) return;
+  pair.checks[sceneNum] = !pair.checks[sceneNum];
+  saveRotation(data);
+  renderRotationTable();
+}
+
+function populateTextNamesDatalist(){
+  const dl = document.getElementById('all-text-names-list');
+  if(!dl) return;
+  const names = [...new Set(loadTexts().map(t=>t.name))];
+  dl.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+}
+
+function renderRotationTable(){
+  const data = loadRotation();
+  const totalInput = document.getElementById('rotation-total-scenes');
+  if(totalInput) totalInput.value = data.totalScenes;
+
+  const wrap = document.getElementById('rotation-pairs-list');
+  if(!wrap) return;
+
+  if(!data.pairs.length){
+    wrap.innerHTML = `<div class="empty">Pas encore de paire. Crée-en une au-dessus (tape le nom de 2 textes — nouveaux ou existants).</div>`;
+    return;
+  }
+
+  const totalTestsNeeded = Math.ceil(TEXT_TARGET / SUCCESS_RATE); // ex: 12/0.1 = 120
+
+  // Le créneau (utilisé pour le calcul des scènes) est fixe et permanent par paire — il ne bouge jamais.
+  const computed = data.pairs.map(pair=>{
+    const scenes = computeRotationScenes(pair.slot, data.slotCount, data.totalScenes);
+    const testsPerScene = scenes.length ? Math.ceil(totalTestsNeeded / scenes.length) : 0;
+    const nextScene = scenes.find(sc => !pair.checks[sc]);
+    return {pair, scenes, testsPerScene, nextScene: nextScene === undefined ? Infinity : nextScene};
+  });
+
+  // L'affichage, lui, se trie par prochaine scène à venir (la paire la plus proche remonte en haut).
+  computed.sort((a,b)=> a.nextScene - b.nextScene);
+
+  wrap.innerHTML = computed.map(({pair, scenes, testsPerScene, nextScene})=>{
+    const nameA = getTextName(pair.textIdA);
+    const nameB = getTextName(pair.textIdB);
+    const done = nextScene === Infinity;
+    const checkedCount = scenes.filter(sc => pair.checks[sc]).length;
+
+    const bodyHtml = done
+      ? `<div class="pair-meta">Terminé — ${checkedCount}/${scenes.length} scènes faites 🎉</div>`
+      : `
+        <div class="pair-meta">${testsPerScene} tests/scène par texte · prochaine scène : ${nextScene}</div>
+        <div class="scene-chip-row">
+          ${scenes.filter(sc => pair.checks[sc] || sc === nextScene).map(sc=>{
+            const checked = !!pair.checks[sc];
+            return `<button class="scene-chip ${checked?'checked':''}" onclick="toggleRotationCheck(${pair.id}, ${sc})">${sc}</button>`;
+          }).join('')}
+        </div>
+      `;
+
+    return `
+      <div class="pair-card${done ? ' finished' : ''}">
+        <div class="pair-card-top">
+          <div class="pair-names">${escapeHtml(nameA)}<span class="pair-amp">&</span>${escapeHtml(nameB)}</div>
+          <button class="icon-trash-btn small" onclick="deleteRotationPair(${pair.id})" title="Supprimer la paire">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+        ${bodyHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+let pairingOpenForTextId = null;
+
+function togglePairSelector(textId){
+  pairingOpenForTextId = (pairingOpenForTextId === textId) ? null : textId;
+  renderTextsList();
+}
+
+function choosePairPartner(textIdA, textIdB){
+  const data = loadRotation();
+  const slot = nextFreeSlot(data);
+  data.pairs.push({id: Date.now(), textIdA, textIdB, slot, checks:{}});
+  saveRotation(data);
+  pairingOpenForTextId = null;
+  renderTextsList();
+  renderRotationTable();
+  showToast('Paire créée ✓');
+}
+
+function addNewText(){
+  const input = document.getElementById('new-text-name');
+  const name = input.value.trim();
+  if(!name) return;
+  const list = loadTexts();
+  list.push({id: Date.now(), name, sessions: []});
+  saveTexts(list);
+  input.value = '';
+  renderTextsList();
+  showToast('Texte créé ✓');
+}
+
+function renderTextsList(){
+  const list = loadTexts();
+  const wrap = document.getElementById('texts-list');
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty">Pas encore de texte suivi.<br>Crée-en un depuis "Noter".</div>`;
+    return;
+  }
+
+  const pairedIds = new Set();
+  loadRotation().pairs.forEach(p=>{ pairedIds.add(p.textIdA); pairedIds.add(p.textIdB); });
+
+  wrap.innerHTML = '';
+  list.forEach(t=>{
+    const {tested, validated} = textTotals(t);
+    const finished = validated >= TEXT_TARGET;
+    const pct = Math.min(100, (validated/TEXT_TARGET)*100);
+    const isPaired = pairedIds.has(t.id);
+    const selectorOpen = pairingOpenForTextId === t.id;
+
+    const card = document.createElement('div');
+    card.className = 'text-card' + (finished?' finished':'');
+    card.onclick = (e)=>{
+      if(e.target.closest('.pair-btn') || e.target.closest('.pair-selector')) return;
+      openTextDetail(t.id);
+    };
+
+    const pairBtnHtml = isPaired ? '' : `
+      <button class="pair-btn" onclick="event.stopPropagation(); togglePairSelector(${t.id})">
+        ${selectorOpen ? 'Annuler' : '🔗'}
+      </button>
+    `;
+
+    let selectorHtml = '';
+    if(!isPaired && selectorOpen){
+      const candidates = list.filter(other => other.id !== t.id && !pairedIds.has(other.id));
+      selectorHtml = `
+        <div class="pair-selector">
+          ${candidates.length ? candidates.map(c=>`
+            <button class="pair-candidate" onclick="event.stopPropagation(); choosePairPartner(${t.id}, ${c.id})">${escapeHtml(c.name)}</button>
+          `).join('') : `<div class="empty" style="padding:10px;">Aucun autre texte disponible</div>`}
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="text-card-top">
+        <div class="text-card-name">${escapeHtml(t.name)}</div>
+        <div class="text-card-top-right">
+          ${pairBtnHtml}
+          <div class="text-card-count">${validated}/${TEXT_TARGET}</div>
+        </div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      ${selectorHtml}
+    `;
+    wrap.appendChild(card);
+  });
+}
+
+function openTextDetail(id){
+  currentTextId = id;
+  document.getElementById('tests-list-view').style.display = 'none';
+  document.getElementById('tests-detail-view').style.display = 'block';
+  renderTextDetail();
+}
+
+function closeTextDetail(){
+  currentTextId = null;
+  document.getElementById('tests-detail-view').style.display = 'none';
+  document.getElementById('tests-list-view').style.display = 'block';
+  renderTextsList();
+}
+
+function getCurrentText(){
+  return loadTexts().find(t=>t.id===currentTextId);
+}
+
+function renderTextDetail(){
+  const t = getCurrentText();
+  if(!t){ closeTextDetail(); return; }
+  const {tested, validated} = textTotals(t);
+  const finished = validated >= TEXT_TARGET;
+
+  document.getElementById('td-name').textContent = t.name;
+  document.getElementById('td-status').textContent = finished
+    ? 'Texte terminé 🎉'
+    : `Objectif ${TEXT_TARGET} blagues validées (mini ${TEXT_MIN})`;
+  document.getElementById('td-validated').textContent = validated;
+  document.getElementById('td-tested').textContent = tested;
+
+  const pct = Math.min(100, (validated/TEXT_TARGET)*100);
+  document.getElementById('td-progress-fill').style.width = pct+'%';
+
+  const remainingEl = document.getElementById('td-remaining');
+  if(finished){
+    remainingEl.textContent = 'Bravo, cible atteinte !';
+  } else {
+    const remaining = TEXT_TARGET - validated;
+    const estSessions = Math.ceil(remaining / (6*SUCCESS_RATE));
+    remainingEl.textContent = `${remaining} blague(s) restante(s) · environ ${estSessions} session(s) au rythme habituel`;
+  }
+
+  renderTextProgressChart(t);
+  renderSessionsList(t);
+}
+
+function renderTextProgressChart(t){
+  const svg = document.getElementById('text-progress-chart');
+  svg.innerHTML = '';
+  const ns='http://www.w3.org/2000/svg';
+  const w=300, h=140;
+  const padLeft=26, padRight=10, padTop=10, padBottom=20;
+  const chartW = w-padLeft-padRight;
+  const chartH = h-padTop-padBottom;
+
+  const sessions = t.sessions.slice().sort((a,b)=> a.date.localeCompare(b.date));
+
+  if(!sessions.length){
+    const txt = document.createElementNS(ns,'text');
+    txt.setAttribute('x', w/2); txt.setAttribute('y', h/2);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('fill','#9C96A3'); txt.setAttribute('font-size','11');
+    txt.textContent = "Ajoute une session pour voir la progression";
+    svg.appendChild(txt);
+    return;
+  }
+
+  // cumulative real points
+  let cumTested = 0, cumValidated = 0;
+  const realPts = [[0,0]];
+  sessions.forEach(s=>{
+    cumTested += (s.tested||0);
+    cumValidated += (s.validated||0);
+    realPts.push([cumTested, cumValidated]);
+  });
+
+  const maxTested = Math.max(cumTested, 1);
+  const maxY = Math.max(cumValidated, TEXT_TARGET) * 1.15;
+
+  const xScale = v => padLeft + (v/maxTested)*chartW;
+  const yScale = v => padTop + chartH - (v/maxY)*chartH;
+
+  // y gridlines (0, target/2, target, maxY)
+  const yTicks = [0, TEXT_MIN, TEXT_TARGET];
+  yTicks.forEach(v=>{
+    const y = yScale(v);
+    const gline = document.createElementNS(ns,'line');
+    gline.setAttribute('x1', padLeft); gline.setAttribute('x2', w-padRight);
+    gline.setAttribute('y1', y); gline.setAttribute('y2', y);
+    gline.setAttribute('stroke', v===TEXT_TARGET ? '#6FA97C' : '#332F37');
+    gline.setAttribute('stroke-width', v===TEXT_TARGET ? '1.3' : '1');
+    if(v===TEXT_TARGET) gline.setAttribute('stroke-dasharray','4,3');
+    svg.appendChild(gline);
+
+    const label = document.createElementNS(ns,'text');
+    label.setAttribute('x', padLeft-6); label.setAttribute('y', y+3);
+    label.setAttribute('text-anchor','end'); label.setAttribute('font-size','7');
+    label.setAttribute('fill','#9C96A3');
+    label.textContent = v;
+    svg.appendChild(label);
+  });
+
+  // x axis baseline
+  const axis = document.createElementNS(ns,'line');
+  axis.setAttribute('x1', padLeft); axis.setAttribute('x2', w-padRight);
+  axis.setAttribute('y1', padTop+chartH); axis.setAttribute('y2', padTop+chartH);
+  axis.setAttribute('stroke', '#4A4550'); axis.setAttribute('stroke-width','1');
+  svg.appendChild(axis);
+
+  // reference line: y = x * SUCCESS_RATE, from x=0 to x=maxTested
+  const refPath = `M${xScale(0).toFixed(1)},${yScale(0).toFixed(1)} L${xScale(maxTested).toFixed(1)},${yScale(maxTested*SUCCESS_RATE).toFixed(1)}`;
+  const refLine = document.createElementNS(ns,'path');
+  refLine.setAttribute('d', refPath);
+  refLine.setAttribute('fill','none');
+  refLine.setAttribute('stroke','#8E8CD8');
+  refLine.setAttribute('stroke-width','2');
+  refLine.setAttribute('stroke-dasharray','3,3');
+  svg.appendChild(refLine);
+
+  // real line
+  const realPath = realPts.map((p,i)=> (i===0?'M':'L')+xScale(p[0]).toFixed(1)+','+yScale(p[1]).toFixed(1)).join(' ');
+  const realLine = document.createElementNS(ns,'path');
+  realLine.setAttribute('d', realPath);
+  realLine.setAttribute('fill','none');
+  realLine.setAttribute('stroke','#E8B33D');
+  realLine.setAttribute('stroke-width','2.5');
+  realLine.setAttribute('stroke-linecap','round');
+  realLine.setAttribute('stroke-linejoin','round');
+  svg.appendChild(realLine);
+
+  realPts.slice(1).forEach(p=>{
+    const c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx', xScale(p[0])); c.setAttribute('cy', yScale(p[1])); c.setAttribute('r','3');
+    c.setAttribute('fill','#E8B33D');
+    svg.appendChild(c);
+  });
+
+  // x label: cumulative tested max
+  const xlabel = document.createElementNS(ns,'text');
+  xlabel.setAttribute('x', w-padRight); xlabel.setAttribute('y', h-4);
+  xlabel.setAttribute('text-anchor','end'); xlabel.setAttribute('font-size','7');
+  xlabel.setAttribute('fill','#9C96A3');
+  xlabel.textContent = maxTested + ' testées';
+  svg.appendChild(xlabel);
+}
+
+function renderSessionsList(t){
+  const wrap = document.getElementById('sessions-list');
+  const sessions = t.sessions.slice().sort((a,b)=> b.date.localeCompare(a.date));
+  if(!sessions.length){
+    wrap.innerHTML = `<div class="empty">Aucune session enregistrée.</div>`;
+    return;
+  }
+  wrap.innerHTML = sessions.map(s=>`
+    <div class="session-item">
+      <div class="sdate">${formatDate(s.date)}${s.plateau ? ' · '+escapeHtml(s.plateau) : ''}</div>
+      <div class="sres"><span class="ok">${s.validated||0} réussi(es)</span> / <span class="no">${s.tested||0} testé(es)</span></div>
+      <button class="icon-trash-btn small" onclick="deleteSession(${s.id})" title="Supprimer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function deleteSession(sessionId){
+  const list = loadTexts();
+  const idx = list.findIndex(x=>x.id===currentTextId);
+  list[idx].sessions = list[idx].sessions.filter(s=>s.id!==sessionId);
+  saveTexts(list);
+  renderTextDetail();
+  renderHomeRating();
+}
+
+function deleteCurrentText(){
+  const list = loadTexts().filter(t=>t.id!==currentTextId);
+  saveTexts(list);
+  closeTextDetail();
+  renderHomeRating();
+  populateTextNamesDatalist();
+  renderRotationTable();
+}
+
+/* ---------- Export / Import ---------- */
+function toggleBackupModal(){
+  const el = document.getElementById('backup-modal-overlay');
+  el.style.display = (el.style.display === 'flex') ? 'none' : 'flex';
+}
+function closeBackupModal(){
+  document.getElementById('backup-modal-overlay').style.display = 'none';
+}
+
+function exportBackstageData(){
+  const backup = {
+    exportedAt: new Date().toISOString(),
+    scenes: JSON.parse(localStorage.getItem('backstage_scenes_v1') || '[]'),
+    goals: JSON.parse(localStorage.getItem('backstage_goals_v1') || '{}'),
+    texts: JSON.parse(localStorage.getItem('backstage_texts_v1') || '[]'),
+    rotation: JSON.parse(localStorage.getItem('backstage_rotation_v1') || 'null')
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `backstage-sauvegarde-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Sauvegarde téléchargée ✓');
+}
+
+function importBackstageData(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data || typeof data !== 'object'){ throw new Error('format invalide'); }
+      localStorage.setItem('backstage_scenes_v1', JSON.stringify(data.scenes || []));
+      localStorage.setItem('backstage_goals_v1', JSON.stringify(data.goals || {}));
+      localStorage.setItem('backstage_texts_v1', JSON.stringify(data.texts || []));
+      if(data.rotation) localStorage.setItem('backstage_rotation_v1', JSON.stringify(data.rotation));
+      showToast('Données restaurées ✓');
+      document.getElementById('import-file-input').value = '';
+      renderHomeRating();
+      closeBackupModal();
+    }catch(err){
+      showToast('Fichier invalide');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Générateur de mots aléatoires ---------- */
+const RANDOM_WORDS = [
+  "Parapluie","Voisin","Frigo","Métro","Embouteillage","Régime","Salle de sport","Application","Notification",
+  "Batterie","Mot de passe","Wifi","Livreur","Colis","Ascenseur","Escalier","Balcon","Colocataire","Loyer",
+  "Propriétaire","Facture","Impôts","Banque","Carte bleue","Distributeur","Supermarché","Caissier","Ticket de caisse",
+  "Panier","Machine à laver","Sèche-linge","Chaussette perdue","Aspirateur","Robot ménager","Ménage du dimanche",
+  "Poubelle","Tri sélectif","Compost","Voisin bruyant","Alarme incendie","Panne d'électricité","Plombier",
+  "Fuite d'eau","Dératisation","Cafard","Araignée","Pigeon","Mouette","Rat de ville","Punaise de lit","Chauffage",
+  "Climatisation","Volet roulant","Interphone","Digicode","Boîte aux lettres","Facteur","Recommandé","Réclamation",
+  "Service après-vente","Garantie","Panne de réveil","Snooze","Café du matin","Petit-déjeuner","Mariage","Divorce",
+  "Belle-mère","Beau-père","Belle-famille","Repas de Noël","Cadeau raté","Divorce des parents","Garde alternée",
+  "Crèche","Doudou","Terrible two","Adolescent","Crise existentielle","Quarantaine","Retraite","EHPAD","Enterrement",
+  "Testament","Héritage","Cousin éloigné","Mariage forcé","Demoiselle d'honneur","Témoin","Discours de mariage",
+  "Divorce éclair","Anniversaire raté","Bougies","Chanson d'anniversaire","Gâteau brûlé","Cadeau d'anniversaire",
+  "Liste de mariage","Enterrement de vie de garçon","Enterrement de vie de jeune fille","Fête des voisins",
+  "Réunion de famille","Photo de famille","Album photo","Grand-mère","Grand-père","Tonton","Tata","Filleul",
+  "Marraine","Parrain","Faire-part","Baptême","Communion","Repas dominical","Belle-sœur","Beau-frère","Demi-frère",
+  "Beau-fils","Site de rencontre","Swipe","Ghosting","Premier rendez-vous","Belle-mère toxique","Amour à distance",
+  "Coup de foudre","Rupture","Ex","Friendzone","Célibat","Speed dating","Application de rencontre","Message ignoré",
+  "Statut relationnel","Réseaux sociaux amoureux","Anniversaire de couple","Bague de fiançailles",
+  "Demande en mariage","Lune de miel","Crise de couple","Thérapie de couple","Jalousie","Infidélité","Réconciliation",
+  "Cadeau de Saint-Valentin","Restaurant romantique","Bouquet de fleurs","Déclaration d'amour","Texto ambigu",
+  "Statut Facebook","Photo de profil","Rendez-vous Tinder","Premier baiser","Coloc amoureux","Ex qui revient",
+  "Mariage arrangé","Open space","Réunion","PowerPoint","Mail professionnel","Pause déjeuner","Machine à café",
+  "Collègue","Télétravail","Visio","Micro coupé","Caméra allumée","Chat de groupe professionnel",
+  "Entretien d'embauche","CV","Lettre de motivation","Patron","Syndicat","Grève","Manifestation",
+  "Augmentation refusée","Prime de fin d'année","Notes de frais","Badge d'accès","Open bar d'entreprise","Séminaire",
+  "Team building","Escape game d'entreprise","Feedback 360","Objectifs trimestriels","Burn out","Arrêt maladie",
+  "Démission","Préavis","Chômage","Pôle emploi","Freelance","Auto-entrepreneur","Client difficile","Facture impayée",
+  "Devis","Contrat CDI","Contrat CDD","Période d'essai","Licenciement","Prud'hommes","Comité d'entreprise",
+  "Tickets restaurant","RTT","Congés payés","Heures supplémentaires","Algorithme","Influenceur","Story Instagram",
+  "Filtre Instagram","TikTok","Danse virale","Trend Instagram","Meme","Écran de veille","Mise à jour",
+  "Bug informatique","Réinitialisation","Service client","Standard téléphonique","Musique d'attente","Robot vocal",
+  "Forfait mobile","Data illimitée","Chat de groupe WhatsApp","Notification push","Like","Commentaire toxique",
+  "Troll","Fake news","Deepfake","Intelligence artificielle","Chatbot","Réalité virtuelle","Casque VR",
+  "Console de jeux","Streaming","Abonnement Netflix","Mot de passe oublié","Double authentification","Antivirus",
+  "Écran cassé","Chargeur perdu","Câble USB","Batterie externe","Mode avion","Réseau saturé","Cloud","Sauvegarde",
+  "Photo floue","Story ratée","Selfie raté","Photo de groupe","Vidéo virale","Podcast","YouTubeur","Abonné",
+  "Vélo volé","Trottinette électrique","Free-floating","Vélib","Casque de vélo","Piste cyclable","Code de la route",
+  "Sens interdit","Rond-point","GPS","Bison futé","Bouchon","Autoroute","Aire d'autoroute","Station-service",
+  "Pompiste","Contrôle technique","Assurance auto","Sinistre","Constat amiable","Auto-stop","Covoiturage","TGV",
+  "Retard SNCF","Correspondance ratée","Contrôleur","Amende SNCF","Aéroport","Avion","Turbulence","Valise","Douane",
+  "Permis de conduire","Auto-école","Radar","Amende","Parking","Essence","Péage","Carte grise","Passage piéton",
+  "Feu rouge grillé","Klaxon","Embouteillage matinal","Métro bondé","Correspondance de métro",
+  "Ticket de métro composté","Roue crevée","Panne d'essence","Autopartage","Déclaration de revenus","Livret A",
+  "Assurance vie","Crédit immobilier","Découvert bancaire","Frais bancaires","Carte de crédit","Prêt étudiant",
+  "Loyer impayé","Caution","État des lieux","Notaire","Compromis de vente","Achat immobilier","Location saisonnière",
+  "Airbnb","Solde des soldes","Black Friday","Carte de fidélité","Programme de fidélité","Bon de réduction",
+  "Cagnotte","Crowdfunding","Loto","Grattage","Casino","Machine à sous","Croupier","Poker entre amis","Tombola",
+  "Héritage familial","Investissement en bourse","Crypto-monnaie","Bitcoin","Arnaque en ligne","Faux virement",
+  "Ambulance","Urgences","Salle d'attente","Généraliste","Dentiste","Radiographie","Ordonnance","Pharmacien",
+  "Mutuelle","Sécurité sociale","Certificat médical","Kinésithérapeute","Ostéopathe","Acupuncture","Médecine douce",
+  "Thérapie","Psy","Anxiété","Insomnie","Ronflement","Allergie","Intolérance au lactose","Gluten","Végan",
+  "Végétarien","Régime sans gluten","Régime paléo","Jeûne intermittent","Superaliment","Détox","Jus vert","Smoothie",
+  "Chirurgie esthétique","Régime miracle","Coach sportif","Yoga","Méditation","Vaccin","Rappel vaccinal",
+  "Test sanguin","Cholestérol","Tension artérielle","Mal de dos","Courbatures","Kiné du sport","Entorse","Plâtre",
+  "Béquilles","Convalescence","Salle de sport bondée","Cours de zumba","Coach Instagram","Abdos","Marathon",
+  "Course à pied","Chrono","Médaille en chocolat","Sponsor local","Randonnée","Camping","Barbecue","Moustique",
+  "Piscine","Plage","Bronzage","Coup de soleil","Ski","Chute en ski","Remontée mécanique","Snowboard","Surf",
+  "Planche à voile","Escalade","Yoga en plein air","Fitness","Musculation","Vestiaire","Douche collective",
+  "Match de foot","Supporter énervé","Arbitre contesté","Carton rouge","Penalty raté","Karaoké",
+  "Soirée jeux de société","Monopoly","Triche au Monopoly","Belote","Tarot entre amis","Apéro","Chips renversées",
+  "Bière tiède","Barbecue raté","Pétanque","Boules de pétanque","Cochonnet","Anniversaire de mariage","Fête foraine",
+  "Manège","Barbe à papa","Rentrée scolaire","Cartable","Devoirs","Cahier de texte","Bulletin scolaire",
+  "Professeur principal","Conseil de classe","Redoublement","Cours particuliers","Bac","Épreuve orale",
+  "Stress d'examen","Amphithéâtre","Cours magistral","Colocation étudiante","Restaurant universitaire",
+  "Bibliothèque universitaire","Cité U","Soirée étudiante","Alcootest","Stage obligatoire","Rapport de stage",
+  "Mémoire de fin d'études","Soutenance","Jury","Diplôme","Remise de diplômes","Photo de classe","Cour de récréation",
+  "Cantine scolaire","Sortie scolaire","Voyage scolaire","Classe verte","Uniforme scolaire","Punition","Colle",
+  "Carnet de correspondance","Horoscope","Voyante","Tarot divinatoire","Coach de vie","Développement personnel",
+  "Bien-être","Superstition","Chat noir","Vendredi 13","Trèfle à quatre feuilles","Patte de lapin","Sel renversé",
+  "Parapluie ouvert à l'intérieur","Échelle sous laquelle passer","Miroir cassé","Signe astrologique incompatible",
+  "Feng shui","Décodeur TV cassé","Télécommande perdue","Pile qui fuit","Ampoule grillée","Fusible sauté",
+  "Robinet qui goutte","Chaussette dépareillée","Élastique de cheveux introuvable","Stylo qui ne marche plus",
+  "Nœud dans les écouteurs","Chargeur qui ne rentre pas","Application qui plante","Wifi du voisin",
+  "Code wifi introuvable","Mot de passe trop compliqué","Captcha impossible","File d'attente interminable",
+  "Ticket de caisse trop long","Sac plastique payant","Rayon introuvable en magasin","Vendeur introuvable",
+  "Cabine d'essayage occupée","Miroir déformant","Étiquette qui gratte","Coupe de cheveux ratée","Coiffeur bavard",
+  "Barbe négligée","Rasage difficile","Poil incarné","Bouton d'acné","Cerne","Ride","Botox","Crème anti-âge",
+  "Régime yoyo","Balance qui ment","Miroir sans pitié","Vêtement trop serré","Taille qui a changé",
+  "Essayage en magasin","Pantalon qui craque","Chemise qui tire","Chaussures neuves qui font mal","Ampoule au pied",
+  "Manucure ratée","Vernis écaillé","Tatouage regretté","Piercing douloureux","Coup de soleil sur le crâne",
+  "Cheveux gras","Pellicules","Sourcils mal épilés","Maquillage qui coule","Rouge à lèvres sur les dents",
+  "Suite de film ratée","Remake inutile","Spoiler","Fin de série décevante","Cliffhanger","Saison qui traîne",
+  "Personnage tué trop tôt","Doublage raté","Sous-titres décalés","Bande-annonce trompeuse",
+  "Critique de cinéma sévère","File d'attente cinéma","Popcorn trop cher","Téléphone qui sonne au cinéma",
+  "Voisin qui commente le film","Netflix qui demande si t'es toujours là","Playlist algorithmique",
+  "Chanson qui reste dans la tête","Radio qui repasse la même chanson","Concert annulé",
+  "Billet de concert introuvable","Revente de billets","Fan hystérique","Autographe raté","Selfie avec une célébrité",
+  "Sosie de célébrité","Standing ovation ratée"
+];
+
+function generateRandomWord(){
+  const word = RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
+  document.getElementById('random-word-display').textContent = word;
+}
+
+/* ---------- Générateur de chiffre aléatoire ---------- */
+const NUMGEN_MAX_KEY = 'backstage_numgen_max';
+
+function generateRandomNumber(){
+  let max = parseInt(localStorage.getItem(NUMGEN_MAX_KEY), 10);
+  if(isNaN(max) || max < 1) max = 10;
+  const num = Math.floor(Math.random() * max) + 1;
+  document.getElementById('random-number-display').textContent = num;
+}
+
+function openNumberGenModal(){
+  const current = localStorage.getItem(NUMGEN_MAX_KEY) || '10';
+  document.getElementById('numgen-modal-input').value = current;
+  document.getElementById('numgen-modal-overlay').style.display = 'flex';
+}
+function closeNumberGenModal(){
+  document.getElementById('numgen-modal-overlay').style.display = 'none';
+}
+function confirmNumberGenMax(){
+  let max = parseInt(document.getElementById('numgen-modal-input').value, 10);
+  if(isNaN(max) || max < 1) max = 1;
+  localStorage.setItem(NUMGEN_MAX_KEY, String(max));
+  closeNumberGenModal();
+  generateRandomNumber();
+}
+
+function initNumberGen(){
+  if(localStorage.getItem(NUMGEN_MAX_KEY) === null){
+    localStorage.setItem(NUMGEN_MAX_KEY, '10');
+  }
+  generateRandomNumber();
+}
+
+/* ---------- init ---------- */
+document.getElementById('f-nom').addEventListener('input', updateLiveScore);
+document.getElementById('f-date').addEventListener('change', updateLiveScore);
+resetForm();
+renderHomeRating();
+generateRandomWord();
+initNumberGen();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
