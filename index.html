@@ -173,6 +173,18 @@
     top:8px;
     right:8px;
   }
+  .rotation-scenes-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--text-dim);
+    padding:2px 2px 4px;
+  }
+  .rotation-scenes-row strong{
+    color:var(--accent);
+    font-weight:800;
+  }
 
   .btn-col{
     display:flex;
@@ -320,6 +332,16 @@
     padding:12px 14px;
     color:var(--text);
     font-size:15px;
+  }
+  .field select{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--text);
+    font-size:14.5px;
+    font-weight:600;
   }
   .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
 
@@ -529,95 +551,55 @@
     font-weight:700;
     cursor:pointer;
     line-height:1;
+    white-space:nowrap;
   }
-  .pair-selector{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    margin-top:10px;
-    padding-top:10px;
-    border-top:1px dashed var(--border);
+  .pair-btn.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#1A1508;
   }
-  .pair-candidate{
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:7px 10px;
-    color:var(--text);
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
+  .pair-btn.bonus{
+    background:#8E8CD8;
+    border-color:#8E8CD8;
+    color:#1A1830;
   }
 
-  .next-scene-chip{
-    display:block;
-    width:100%;
-    margin-top:10px;
-    padding:12px 0;
-    border-radius:10px;
-    border:1px solid var(--accent);
-    background:rgba(232,179,61,0.12);
-    color:var(--accent);
-    font-size:13.5px;
-    font-weight:800;
-    cursor:pointer;
-    text-align:center;
-  }
-
-  .pair-card{
+  .rotation-status-row{
     background:var(--surface);
     border:1px solid var(--border);
-    border-radius:12px;
-    padding:14px;
-    margin-bottom:10px;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:6px;
   }
-  .pair-card.finished{
-    border-color:var(--s2);
-    opacity:0.7;
+  .rotation-status-row.urgent{
+    border-color:var(--accent);
+    background:rgba(232,179,61,0.08);
   }
-  .pair-card-top{
+  .rotation-status-row.done{opacity:0.6;}
+  .rotation-status-row.bonus-row{
+    border-style:dashed;
+    opacity:0.85;
+  }
+  .rotation-status-row.bonus-row .rotation-status-count{color:#8E8CD8;}
+  .rotation-status-top{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:10px;
   }
-  .pair-names{
-    font-size:14px;
+  .rotation-status-name{
+    font-size:13px;
     font-weight:700;
   }
-  .pair-amp{
-    color:var(--text-dim);
-    font-weight:400;
-    margin:0 3px;
-  }
-  .pair-meta{
-    font-size:11.5px;
+  .rotation-status-count{
+    font-size:12px;
+    font-weight:800;
     color:var(--accent);
-    font-weight:700;
-    margin-top:4px;
   }
-  .scene-chip-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    margin-top:10px;
-  }
-  .scene-chip{
-    min-width:30px;
-    padding:6px 8px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    background:var(--surface-2);
+  .rotation-status-row.done .rotation-status-count{color:var(--s2);}
+  .rotation-status-meta{
+    font-size:10.5px;
     color:var(--text-dim);
-    font-size:11.5px;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .scene-chip.checked{
-    background:var(--s2);
-    border-color:var(--s2);
-    color:#0E1A11;
-    text-decoration:line-through;
+    margin-top:5px;
   }
 
   .session-item{
@@ -971,14 +953,14 @@
       </div>
 
       <div class="gen-row" style="margin-top:12px;">
-        <div class="stat-card gen-card" id="word-gen-card">
-          <div class="big-num" id="random-word-display" onclick="generateRandomWord()" style="font-size:22px;cursor:pointer;">—</div>
+        <div class="stat-card gen-card" id="word-gen-card" onclick="generateRandomWord()" style="cursor:pointer;">
+          <div class="big-num" id="random-word-display" style="font-size:22px;">—</div>
         </div>
-        <div class="stat-card gen-card" id="number-gen-card" style="position:relative;">
+        <div class="stat-card gen-card" id="number-gen-card" onclick="generateRandomNumber()" style="position:relative;cursor:pointer;">
           <button class="icon-trash-btn small numgen-edit-btn" onclick="event.stopPropagation(); openNumberGenModal()" title="Changer le maximum">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
           </button>
-          <div class="big-num" id="random-number-display" onclick="generateRandomNumber()" style="font-size:26px;cursor:pointer;">—</div>
+          <div class="big-num" id="random-number-display" style="font-size:26px;">—</div>
         </div>
       </div>
 
@@ -1025,6 +1007,13 @@
           </span>
           <span class="arrow">›</span>
         </button>
+        <button class="row-btn" onclick="location.href='webcal://calendar.google.com/calendar/ical/8c01427cc8c2484cda4cea395decf1d4ff56f231eba93009736191d7f2add827%40group.calendar.google.com/private-b0d795ce817560456a66a958ed58f87c/basic.ics'">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+            <span>Plateaux Paris</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
       </div>
     </section>
 
@@ -1046,9 +1035,19 @@
 
       <div class="section-label">Sujets</div>
       <div id="scene-texts-list"></div>
+      <div class="field">
+        <select id="scene-text-picker" onchange="pickExistingSceneText(this.value); this.value='';">
+          <option value="">+ Sélectionner un sujet existant</option>
+        </select>
+      </div>
       <div class="field" style="display:flex;gap:8px;">
         <input type="text" id="new-scene-text-name" placeholder="Nouveau sujet" style="flex:1;">
         <button type="button" class="save-btn" style="padding:10px 16px;" onclick="addTextFromNotation()">+ Ajouter</button>
+      </div>
+
+      <div id="rotation-count-row" style="display:none;align-items:center;gap:10px;margin:14px 2px 4px;">
+        <button type="button" class="goal-check" id="rotation-count-toggle" onclick="toggleRotationCountScene()">✓</button>
+        <span style="font-size:12.5px;color:var(--text-dim);">Cette scène compte dans le plan de rotation</span>
       </div>
 
       <div class="section-label">Thunes</div>
@@ -1096,6 +1095,11 @@
         </div>
       </div>
 
+      <div class="section-label">Évolution du score</div>
+      <div class="stat-card" style="padding-top:10px;">
+        <svg id="line-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
+      </div>
+
       <div class="section-label">Argent</div>
       <div class="stat-grid">
         <div class="stat-card">
@@ -1111,21 +1115,62 @@
         <div class="big-num" id="stat-net">0€</div>
         <div class="label">Solde net</div>
       </div>
-
-      <div class="section-label clickable" onclick="toggleCollapse('line-chart-wrap')">
-        Évolution du score <span class="chevron" id="chevron-line-chart-wrap">›</span>
-      </div>
-      <div id="line-chart-wrap" style="display:none;">
-        <div class="stat-card" style="padding-top:10px;">
-          <svg id="line-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
+      <div id="money-evo-inline-wrap" style="display:none;">
+        <div class="stat-card" style="padding-top:10px;margin-top:10px;">
+          <div class="chart-legend">
+            <div class="item"><span class="dot" style="background:var(--s2);"></span>Gagné</div>
+            <div class="item"><span class="dot" style="background:var(--s0);"></span>Perdu</div>
+          </div>
+          <svg id="money-combo-chart" viewBox="0 0 300 140" style="width:100%;height:140px;overflow:visible;"></svg>
         </div>
       </div>
 
-      <div class="section-label clickable" onclick="toggleCollapse('bar-chart-wrap')">
-        Moyenne par critère <span class="chevron" id="chevron-bar-chart-wrap">›</span>
+      <div id="month-writing-stats" style="display:none;">
+        <div class="section-label">Écriture ce mois</div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="big-num" id="stat-month-tested">0</div>
+            <div class="label">Tests</div>
+          </div>
+          <div class="stat-card">
+            <div class="big-num" id="stat-month-validated">0</div>
+            <div class="label">Validées</div>
+          </div>
+        </div>
       </div>
-      <div id="bar-chart-wrap" style="display:none;">
-        <div class="stat-card" id="bar-chart"></div>
+
+      <div id="quality-month-view" style="display:none;">
+        <div class="section-label">Qualité des scènes</div>
+        <div class="stat-card" style="display:flex;justify-content:space-around;text-align:center;">
+          <div>
+            <div class="big-num" style="color:var(--s2);font-size:22px;" id="stat-belles">0</div>
+            <div class="label">Belles</div>
+          </div>
+          <div>
+            <div class="big-num" style="color:var(--s1);font-size:22px;" id="stat-sympas">0</div>
+            <div class="label">Sympas</div>
+          </div>
+          <div>
+            <div class="big-num" style="color:var(--s0);font-size:22px;" id="stat-nulles">0</div>
+            <div class="label">Nulles</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="quality-chart-outer" style="display:none;">
+        <div class="section-label clickable" onclick="toggleCollapse('quality-chart-wrap')">
+          Qualité des scènes <span class="chevron" id="chevron-quality-chart-wrap">›</span>
+        </div>
+        <div id="quality-chart-wrap" style="display:none;">
+          <div class="stat-card" style="overflow-x:auto;">
+            <div class="chart-legend">
+              <div class="item"><span class="dot" style="background:var(--s2);"></span>Belles</div>
+              <div class="item"><span class="dot" style="background:var(--s1);"></span>Sympas</div>
+              <div class="item"><span class="dot" style="background:var(--s0);"></span>Nulles</div>
+            </div>
+            <div class="monthly-bars" id="quality-bars"></div>
+          </div>
+        </div>
       </div>
 
       <div id="monthly-outer">
@@ -1137,42 +1182,44 @@
             <div class="chart-legend">
               <div class="item"><span class="dot" style="background:var(--accent);"></span>Scènes</div>
               <div class="item"><span class="dot" style="background:#8E8CD8;"></span>Note moy.</div>
-              <div class="item"><span class="dot" style="background:var(--s2);"></span>Argent gagné</div>
             </div>
             <div class="monthly-bars" id="monthly-bars"></div>
           </div>
         </div>
       </div>
 
-      <div class="section-label clickable" onclick="toggleCollapse('writing-progress-wrap')">
-        Progression écriture <span class="chevron" id="chevron-writing-progress-wrap">›</span>
-      </div>
-      <div id="writing-progress-wrap" style="display:none;">
-        <div class="stat-card" style="padding-top:10px;">
-          <div class="chart-legend">
-            <div class="item"><span class="dot" style="background:var(--accent);"></span>Testées (moy./session)</div>
-            <div class="item"><span class="dot" style="background:#8E8CD8;"></span>Validées (moy./session)</div>
+      <div id="writing-progress-outer">
+        <div class="section-label clickable" onclick="toggleCollapse('writing-progress-wrap')">
+          Progression en écriture <span class="chevron" id="chevron-writing-progress-wrap">›</span>
+        </div>
+        <div id="writing-progress-wrap" style="display:none;">
+          <div class="stat-card" style="padding-top:10px;">
+            <div class="chart-legend">
+              <div class="item"><span class="dot" style="background:var(--accent);"></span>Testées (moy./session)</div>
+              <div class="item"><span class="dot" style="background:#8E8CD8;"></span>Validées (moy./session)</div>
+            </div>
+            <svg id="writing-progress-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
           </div>
-          <svg id="writing-progress-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
         </div>
       </div>
 
-      <div class="section-label clickable" onclick="toggleCollapse('regularity-wrap')">
-        Régularité <span class="chevron" id="chevron-regularity-wrap">›</span>
-      </div>
-      <div id="regularity-wrap" style="display:none;">
-        <div class="stat-card" style="overflow-x:auto;">
-          <div class="monthly-bars" id="regularity-bars"></div>
+      <div id="regularity-outer">
+        <div class="section-label clickable" onclick="toggleCollapse('regularity-wrap')">
+          Régularité <span class="chevron" id="chevron-regularity-wrap">›</span>
+        </div>
+        <div id="regularity-wrap" style="display:none;">
+          <div class="stat-card" style="overflow-x:auto;">
+            <div class="label" style="margin-bottom:10px;">Jours moyen entre 2 scènes</div>
+            <div class="monthly-bars" id="regularity-bars"></div>
+          </div>
         </div>
       </div>
 
-      <div class="section-label clickable" onclick="toggleCollapse('money-evo-wrap')">
-        Argent — évolution <span class="chevron" id="chevron-money-evo-wrap">›</span>
+      <div class="section-label clickable" onclick="toggleCollapse('bar-chart-wrap')">
+        Moyenne par critère <span class="chevron" id="chevron-bar-chart-wrap">›</span>
       </div>
-      <div id="money-evo-wrap" style="display:none;">
-        <div class="stat-card" style="padding-top:10px;">
-          <svg id="money-evo-chart" viewBox="0 0 300 130" style="width:100%;height:130px;overflow:visible;"></svg>
-        </div>
+      <div id="bar-chart-wrap" style="display:none;">
+        <div class="stat-card" id="bar-chart"></div>
       </div>
 
       <div class="section-label clickable" onclick="toggleCollapse('scene-history-wrap')">
@@ -1204,19 +1251,28 @@
       <div id="tests-list-view" style="margin-top:20px;">
 
         <div class="section-label">Plan de rotation</div>
-        <div class="field" style="display:flex;gap:10px;align-items:center;">
-          <label style="font-size:11px;color:var(--text-dim);white-space:nowrap;">Nb de scènes prévues</label>
-          <input type="number" min="1" id="rotation-total-scenes" style="width:70px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;" onchange="updateRotationTotalScenes(this.value)">
-        </div>
+        <div id="rotation-scenes-config"></div>
 
-        <div id="rotation-pairs-list" style="margin-top:14px;"></div>
+        <div id="rotation-status-list" style="margin-top:14px;"></div>
 
-        <div class="section-label" style="margin-top:26px;">Tous les textes</div>
-        <div class="field" style="display:flex;gap:8px;margin-top:8px;">
+        <div class="field" style="display:flex;gap:8px;margin-top:26px;">
           <input type="text" id="new-text-name" placeholder="Nom du nouveau texte" style="flex:1;" onkeydown="if(event.key==='Enter'){addNewText();event.preventDefault();}">
           <button class="save-btn" style="padding:10px 16px;" onclick="addNewText()">+ Ajouter</button>
         </div>
-        <div id="texts-list" style="margin-top:8px;"></div>
+
+        <div class="section-label clickable" onclick="toggleCollapse('texts-list-wrap')">
+          Tous les textes <span class="chevron" id="chevron-texts-list-wrap">›</span>
+        </div>
+        <div id="texts-list-wrap" style="display:none;">
+          <div id="texts-list" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="section-label clickable" onclick="toggleCollapse('finished-texts-wrap')">
+          Textes finis <span class="chevron" id="chevron-finished-texts-wrap">›</span>
+        </div>
+        <div id="finished-texts-wrap" style="display:none;">
+          <div id="finished-texts-list" style="margin-top:8px;"></div>
+        </div>
       </div>
 
       <!-- Sous-vue détail d'un texte -->
@@ -1234,7 +1290,10 @@
             </button>
           </div>
           <div class="stat-grid" style="margin-top:14px;">
-            <div class="stat-card" style="margin:0;padding:12px;">
+            <div class="stat-card" style="margin:0;padding:12px;position:relative;">
+              <button class="icon-trash-btn small" style="position:absolute;top:6px;right:6px;color:var(--text-dim);" onclick="openEditValidatedModal()" title="Modifier">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </button>
               <div class="big-num" id="td-validated" style="font-size:24px;">0</div>
               <div class="label">Validées</div>
             </div>
@@ -1318,6 +1377,33 @@
       <button class="modal-close" onclick="closeNumberGenModal()">Annuler</button>
     </div>
   </div>
+
+  <div id="editvalidated-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeEditValidatedModal()">
+    <div class="modal-card">
+      <div class="modal-title">Blagues déjà validées</div>
+      <input type="number" min="0" id="editvalidated-modal-input" style="width:100%;text-align:center;font-size:20px;font-weight:800;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmEditValidated()">Valider</button>
+      <button class="modal-close" onclick="closeEditValidatedModal()">Annuler</button>
+    </div>
+  </div>
+
+  <div id="rotation-scenes-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeRotationScenesModal()">
+    <div class="modal-card">
+      <div class="modal-title">Nombre de scènes prévues</div>
+      <input type="number" min="1" id="rotation-scenes-modal-input" style="width:100%;text-align:center;font-size:20px;font-weight:800;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmRotationScenes()">Valider</button>
+      <button class="modal-close" onclick="closeRotationScenesModal()">Annuler</button>
+    </div>
+  </div>
+
+  <div id="removal-reason-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeRemovalReasonModal()">
+    <div class="modal-card">
+      <div class="modal-title">Pourquoi tu le retires ?</div>
+      <button class="save-btn" style="width:100%;background:var(--s0);" onclick="resolveRemoval('broken')">❌ Ça ne marche pas</button>
+      <button class="save-btn" style="width:100%;margin-top:10px;background:var(--s2);color:#0E1A11;" onclick="resolveRemoval('finished')">✅ C'est fini</button>
+      <button class="modal-close" onclick="closeRemovalReasonModal()">Annuler</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1363,8 +1449,7 @@ function goto(view){
     document.getElementById('tests-detail-view').style.display = 'none';
     currentTextId = null;
     renderTextsList();
-    populateTextNamesDatalist();
-    renderRotationTable();
+    renderRotationPlan();
   }
 }
 
@@ -1422,49 +1507,66 @@ function resetForm(){
   buildCriteriaForm();
   populatePlateauNames();
   populateSceneTextsList();
+  populateScenePicker();
+  updateRotationCountRowVisibility(loadRotation2());
   updateLiveScore();
 }
 
 function populateSceneTextsList(){
-  const texts = loadTexts();
   const wrap = document.getElementById('scene-texts-list');
-  if(!texts.length){
-    wrap.innerHTML = `<div class="empty" style="padding:16px 6px;">Pas encore de sujet créé. Ajoute-en un ci-dessous, ou depuis l'onglet Tests.</div>`;
+  const selectedIds = Object.keys(sceneTextSelections);
+  if(!selectedIds.length){
+    wrap.innerHTML = `<div class="empty" style="padding:14px 6px;">Aucun sujet ajouté pour cette scène.</div>`;
     return;
   }
-  wrap.innerHTML = texts.map(t=>{
-    const sel = sceneTextSelections[t.id];
-    const isSel = !!sel;
+  wrap.innerHTML = selectedIds.map(idStr=>{
+    const id = parseInt(idStr, 10);
+    const sel = sceneTextSelections[id];
+    const name = getTextName(id);
     return `
       <div class="crit" style="padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div class="crit-title">${escapeHtml(t.name)}</div>
-          <button type="button" class="goal-check ${isSel?'done':''}" onclick="toggleSceneText(${t.id})">✓</button>
+          <div class="crit-title">${escapeHtml(name)}</div>
+          <button type="button" class="icon-trash-btn small" onclick="removeSceneText(${id})" title="Retirer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
         </div>
-        ${isSel ? `
-          <div style="display:flex;gap:10px;margin-top:10px;">
-            <div style="flex:1;">
-              <label style="font-size:10.5px;color:var(--text-dim);">Testé</label>
-              <input type="number" min="0" value="${sel.tested||''}" oninput="updateSceneTextVal(${t.id},'tested',this.value)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-size:13px;margin-top:2px;">
-            </div>
-            <div style="flex:1;">
-              <label style="font-size:10.5px;color:var(--text-dim);">Réussi</label>
-              <input type="number" min="0" value="${sel.validated||''}" oninput="updateSceneTextVal(${t.id},'validated',this.value)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-size:13px;margin-top:2px;">
-            </div>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <div style="flex:1;">
+            <label style="font-size:10.5px;color:var(--text-dim);">Testé</label>
+            <input type="number" min="0" value="${sel.tested||''}" oninput="updateSceneTextVal(${id},'tested',this.value)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-size:13px;margin-top:2px;">
           </div>
-        ` : ''}
+          <div style="flex:1;">
+            <label style="font-size:10.5px;color:var(--text-dim);">Réussi</label>
+            <input type="number" min="0" value="${sel.validated||''}" oninput="updateSceneTextVal(${id},'validated',this.value)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-size:13px;margin-top:2px;">
+          </div>
+        </div>
       </div>
     `;
   }).join('');
 }
 
-function toggleSceneText(id){
-  if(sceneTextSelections[id]){
-    delete sceneTextSelections[id];
-  } else {
-    sceneTextSelections[id] = {tested:0, validated:0};
-  }
+function populateScenePicker(){
+  const picker = document.getElementById('scene-text-picker');
+  if(!picker) return;
+  const texts = loadTexts();
+  const available = texts.filter(t => !sceneTextSelections[t.id]);
+  picker.innerHTML = `<option value="">+ Sélectionner un sujet existant</option>` +
+    available.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+}
+
+function pickExistingSceneText(idStr){
+  if(!idStr) return;
+  const id = parseInt(idStr, 10);
+  sceneTextSelections[id] = {tested:0, validated:0};
   populateSceneTextsList();
+  populateScenePicker();
+}
+
+function removeSceneText(id){
+  delete sceneTextSelections[id];
+  populateSceneTextsList();
+  populateScenePicker();
 }
 
 function updateSceneTextVal(id, field, val){
@@ -1485,6 +1587,7 @@ function addTextFromNotation(){
   input.value = '';
   sceneTextSelections[newText.id] = {tested:0, validated:0};
   populateSceneTextsList();
+  populateScenePicker();
 }
 
 function saveScene(){
@@ -1508,8 +1611,7 @@ function saveScene(){
   const texts = loadTexts();
   Object.keys(sceneTextSelections).forEach((idStr, i)=>{
     const id = parseInt(idStr, 10);
-    const sel = sceneTextSelections[id];
-    if(!sel || ((sel.tested||0)===0 && (sel.validated||0)===0)) return;
+    const sel = sceneTextSelections[id] || {};
     const idx = texts.findIndex(t=>t.id===id);
     if(idx>=0){
       texts[idx].sessions.push({
@@ -1522,6 +1624,13 @@ function saveScene(){
     }
   });
   saveTexts(texts);
+
+  // Incrémente le compteur de scènes du plan de rotation, si actif et coché
+  const rotationData = loadRotation2();
+  if(rotationData.totalScenes !== null && rotationData.selectedIds.length > 0 && rotationCountThisScene){
+    rotationData.scenesUsed = (rotationData.scenesUsed || 0) + 1;
+    saveRotation2(rotationData);
+  }
 
   renderHomeRating();
   showToast('Scène enregistrée ✓');
@@ -1611,9 +1720,23 @@ function renderStats(){
   renderBarChart(list);
   renderMonthlyChart(list);
   renderRegularityChart(list);
-  renderMoneyEvolutionChart(list);
+  renderMoneyComboChart(list);
   renderWritingProgressChart();
+  renderQualityStats(list);
   renderHistory(list.slice().reverse());
+
+  // Visibilité selon le mode : Régularité et Progression en écriture n'ont pas
+  // de sens en mode "Par mois" ; la courbe argent s'intègre dans la catégorie
+  // Argent uniquement en All time / Par année (pas en Par mois). Les stats
+  // d'écriture du mois et les compteurs de qualité sont propres au mode "Par mois",
+  // remplacés par un graphique d'évolution en All time / Par année.
+  const isMonth = statsFilter.mode === 'month';
+  document.getElementById('regularity-outer').style.display = isMonth ? 'none' : 'block';
+  document.getElementById('writing-progress-outer').style.display = isMonth ? 'none' : 'block';
+  document.getElementById('money-evo-inline-wrap').style.display = isMonth ? 'none' : 'block';
+  document.getElementById('month-writing-stats').style.display = isMonth ? 'block' : 'none';
+  document.getElementById('quality-month-view').style.display = isMonth ? 'block' : 'none';
+  document.getElementById('quality-chart-outer').style.display = isMonth ? 'none' : 'block';
 }
 
 function monthLabelFr(m){
@@ -1639,7 +1762,7 @@ function renderMonthlyChart(list){
         label: monthLabelFr(m),
         count: scenes.length,
         avg: scenes.length ? scenes.reduce((a,s)=>a+s.total,0)/scenes.length : 0,
-        gains: scenes.reduce((a,s)=>a+(s.gains||0),0)
+        gains: scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0)
       });
     }
   } else {
@@ -1651,7 +1774,7 @@ function renderMonthlyChart(list){
         label: monthLabelFr(parseInt(m,10)) + " '" + y.slice(2),
         count: scenes.length,
         avg: scenes.length ? scenes.reduce((a,s)=>a+s.total,0)/scenes.length : 0,
-        gains: scenes.reduce((a,s)=>a+(s.gains||0),0)
+        gains: scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0)
       };
     });
   }
@@ -1664,12 +1787,10 @@ function renderMonthlyChart(list){
 
   const maxCount = Math.max(1, ...buckets.map(b=>b.count));
   const maxAvg = 20;
-  const maxGains = Math.max(1, ...buckets.map(b=>b.gains));
 
   wrap.innerHTML = buckets.map(b=>{
     const hCount = Math.max(2, (b.count/maxCount)*90);
     const hAvg = Math.max(2, (b.avg/maxAvg)*90);
-    const hGains = Math.max(2, (b.gains/maxGains)*90);
     return `
       <div class="month-group">
         <div class="bars">
@@ -1680,10 +1801,6 @@ function renderMonthlyChart(list){
           <div class="bar-col">
             <span class="bar-value">${b.avg.toFixed(1)}</span>
             <div class="bar note" style="height:${hAvg}px" title="Note moyenne ${b.avg.toFixed(1)}/20"></div>
-          </div>
-          <div class="bar-col">
-            <span class="bar-value">${Math.round(b.gains)}€</span>
-            <div class="bar argent" style="height:${hGains}px" title="${fmtEuro(b.gains)} gagnés"></div>
           </div>
         </div>
         <div class="lbl">${b.label}</div>
@@ -1826,7 +1943,7 @@ function computeWeekBuckets(list){
     buckets.push({
       label: formatShortDateFr(weekStart),
       count: inWeek.length,
-      gains: inWeek.reduce((a,s)=>a+(s.gains||0),0)
+      gains: inWeek.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0)
     });
     cursor.setDate(cursor.getDate()+7);
     guard++;
@@ -1834,22 +1951,48 @@ function computeWeekBuckets(list){
   return buckets;
 }
 
+function computeRegularityGaps(list){
+  const sorted = list.slice().sort((a,b)=> a.date.localeCompare(b.date));
+  if(sorted.length < 2) return [];
+
+  const gapsByMonth = {};
+  for(let i=1; i<sorted.length; i++){
+    const d0 = new Date(sorted[i-1].date);
+    const d1 = new Date(sorted[i].date);
+    const gapDays = Math.max(0, Math.round((d1-d0)/(1000*60*60*24)));
+    const key = sorted[i].date.slice(0,7);
+    if(!gapsByMonth[key]) gapsByMonth[key] = [];
+    gapsByMonth[key].push(gapDays);
+  }
+
+  const keys = Object.keys(gapsByMonth).sort();
+  return keys.map(key=>{
+    const gaps = gapsByMonth[key];
+    const avg = gaps.reduce((a,b)=>a+b,0) / gaps.length;
+    const [y,m] = key.split('-');
+    const label = statsFilter.mode === 'year'
+      ? monthLabelFr(parseInt(m,10))
+      : monthLabelFr(parseInt(m,10)) + " '" + y.slice(2);
+    return {label, avgGap: avg};
+  });
+}
+
 function renderRegularityChart(list){
   const wrap = document.getElementById('regularity-bars');
-  const buckets = computeWeekBuckets(list);
+  const buckets = computeRegularityGaps(list);
   if(!buckets.length){
-    wrap.innerHTML = `<div class="empty">Pas encore de données pour cette période</div>`;
+    wrap.innerHTML = `<div class="empty">Pas encore assez de scènes sur cette période pour calculer ta régularité.</div>`;
     return;
   }
-  const maxCount = Math.max(1, ...buckets.map(b=>b.count));
+  const maxGap = Math.max(1, ...buckets.map(b=>b.avgGap));
   wrap.innerHTML = buckets.map(b=>{
-    const h = Math.max(2, (b.count/maxCount)*90);
+    const h = Math.max(2, (b.avgGap/maxGap)*90);
     return `
       <div class="month-group">
         <div class="bars">
           <div class="bar-col">
-            <span class="bar-value">${b.count}</span>
-            <div class="bar scenes" style="height:${h}px" title="${b.count} scène(s) semaine du ${b.label}"></div>
+            <span class="bar-value">${b.avgGap.toFixed(1)}j</span>
+            <div class="bar note" style="height:${h}px" title="En moyenne 1 scène tous les ${b.avgGap.toFixed(1)} jours"></div>
           </div>
         </div>
         <div class="lbl">${b.label}</div>
@@ -1858,14 +2001,117 @@ function renderRegularityChart(list){
   }).join('');
 }
 
-function renderMoneyEvolutionChart(list){
-  const svg = document.getElementById('money-evo-chart');
+function computeTypeCounts(scenesList){
+  let belles=0, sympas=0, nulles=0;
+  scenesList.forEach(s=>{
+    const v = s.answers && s.answers.type_plateau;
+    if(v === 2) belles++;
+    else if(v === 1) sympas++;
+    else if(v === 0) nulles++;
+  });
+  return {belles, sympas, nulles};
+}
+
+function computeTypeQualityMonthBuckets(list){
+  let buckets = [];
+  if(statsFilter.mode === 'year'){
+    const y = String(statsFilter.year);
+    for(let m=1; m<=12; m++){
+      const key = y + '-' + String(m).padStart(2,'0');
+      const scenes = list.filter(s => s.date && s.date.slice(0,7) === key);
+      buckets.push({label: monthLabelFr(m), ...computeTypeCounts(scenes)});
+    }
+  } else {
+    const keys = [...new Set(list.map(s=>s.date.slice(0,7)))].sort();
+    buckets = keys.map(key=>{
+      const scenes = list.filter(s => s.date.slice(0,7) === key);
+      const [y,m] = key.split('-');
+      return {label: monthLabelFr(parseInt(m,10)) + " '" + y.slice(2), ...computeTypeCounts(scenes)};
+    });
+  }
+  return buckets;
+}
+
+function renderQualityStats(list){
+  if(statsFilter.mode === 'month'){
+    const {belles, sympas, nulles} = computeTypeCounts(list);
+    document.getElementById('stat-belles').textContent = belles;
+    document.getElementById('stat-sympas').textContent = sympas;
+    document.getElementById('stat-nulles').textContent = nulles;
+
+    // Écriture ce mois : total testé / validé sur tous les textes, ce mois-ci
+    const texts = loadTexts();
+    let tested = 0, validated = 0;
+    if(statsFilter.month){
+      texts.forEach(t => (t.sessions||[]).forEach(s=>{
+        if(s.date && s.date.slice(0,7) === statsFilter.month){
+          tested += (s.tested||0);
+          validated += (s.validated||0);
+        }
+      }));
+    }
+    document.getElementById('stat-month-tested').textContent = tested;
+    document.getElementById('stat-month-validated').textContent = validated;
+  } else {
+    const wrap = document.getElementById('quality-bars');
+    const buckets = computeTypeQualityMonthBuckets(list);
+    if(!buckets.length || !buckets.some(b=>b.belles+b.sympas+b.nulles>0)){
+      wrap.innerHTML = `<div class="empty">Pas encore de données pour cette période</div>`;
+      return;
+    }
+    const maxV = Math.max(1, ...buckets.map(b=>Math.max(b.belles, b.sympas, b.nulles)));
+    wrap.innerHTML = buckets.map(b=>{
+      const hB = Math.max(2, (b.belles/maxV)*90);
+      const hS = Math.max(2, (b.sympas/maxV)*90);
+      const hN = Math.max(2, (b.nulles/maxV)*90);
+      return `
+        <div class="month-group">
+          <div class="bars">
+            <div class="bar-col"><span class="bar-value">${b.belles}</span><div class="bar" style="height:${hB}px;background:var(--s2);" title="${b.belles} belle(s) scène(s)"></div></div>
+            <div class="bar-col"><span class="bar-value">${b.sympas}</span><div class="bar" style="height:${hS}px;background:var(--s1);" title="${b.sympas} scène(s) sympa"></div></div>
+            <div class="bar-col"><span class="bar-value">${b.nulles}</span><div class="bar" style="height:${hN}px;background:var(--s0);" title="${b.nulles} scène(s) nulle(s)"></div></div>
+          </div>
+          <div class="lbl">${b.label}</div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function computeMoneyMonthBuckets(list){
+  let buckets = [];
+  if(statsFilter.mode === 'year'){
+    const y = String(statsFilter.year);
+    for(let m=1; m<=12; m++){
+      const key = y + '-' + String(m).padStart(2,'0');
+      const scenes = list.filter(s => s.date && s.date.slice(0,7) === key);
+      buckets.push({
+        label: monthLabelFr(m),
+        gains: scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0)
+      });
+    }
+  } else {
+    const keys = [...new Set(list.map(s=>s.date.slice(0,7)))].sort();
+    buckets = keys.map(key=>{
+      const scenes = list.filter(s => s.date.slice(0,7) === key);
+      const [y,m] = key.split('-');
+      return {
+        label: monthLabelFr(parseInt(m,10)) + " '" + y.slice(2),
+        gains: scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0)
+      };
+    });
+  }
+  return buckets;
+}
+
+function renderMoneyComboChart(list){
+  const svg = document.getElementById('money-combo-chart');
   svg.innerHTML = '';
   const ns='http://www.w3.org/2000/svg';
-  const w=300, h=130;
-  const padLeft=32, padRight=10, padTop=10, padBottom=20;
+  const w=300, h=140;
+  const padLeft=32, padRight=10, padTop=16, padBottom=20;
   const chartW = w-padLeft-padRight, chartH = h-padTop-padBottom;
-  const buckets = computeWeekBuckets(list);
+  const buckets = computeMoneyMonthBuckets(list);
 
   if(!buckets.length){
     const t = document.createElementNS(ns,'text');
@@ -1876,53 +2122,64 @@ function renderMoneyEvolutionChart(list){
     return;
   }
 
-  const maxGains = Math.max(1, ...buckets.map(b=>b.gains));
-  const niceMax = Math.ceil(maxGains/50)*50 || 50;
+  // Barres divergentes : vers le haut si bénéfice, vers le bas si perte cette semaine.
+  const maxPos = Math.max(0, ...buckets.map(b=>b.gains));
+  const maxNeg = Math.max(0, ...buckets.map(b=>-b.gains));
+  const totalRange = (maxPos + maxNeg) || 1;
 
-  [0, niceMax/2, niceMax].forEach(v=>{
-    const y = padTop + chartH - (v/niceMax)*chartH;
-    const gline = document.createElementNS(ns,'line');
-    gline.setAttribute('x1', padLeft); gline.setAttribute('x2', w-padRight);
-    gline.setAttribute('y1', y); gline.setAttribute('y2', y);
-    gline.setAttribute('stroke', '#332F37'); gline.setAttribute('stroke-width','1');
-    svg.appendChild(gline);
-    const label = document.createElementNS(ns,'text');
-    label.setAttribute('x', padLeft-6); label.setAttribute('y', y+3);
-    label.setAttribute('text-anchor','end'); label.setAttribute('font-size','7'); label.setAttribute('fill','#9C96A3');
-    label.textContent = Math.round(v)+'€';
-    svg.appendChild(label);
-  });
+  const zeroY = padTop + chartH * (maxPos / totalRange);
 
+  // Ligne de base (zéro)
   const axis = document.createElementNS(ns,'line');
   axis.setAttribute('x1', padLeft); axis.setAttribute('x2', w-padRight);
-  axis.setAttribute('y1', padTop+chartH); axis.setAttribute('y2', padTop+chartH);
+  axis.setAttribute('y1', zeroY); axis.setAttribute('y2', zeroY);
   axis.setAttribute('stroke', '#4A4550'); axis.setAttribute('stroke-width','1');
   svg.appendChild(axis);
 
-  const pts = buckets.map((b,i)=>{
-    const x = padLeft + (buckets.length>1 ? (i/(buckets.length-1))*chartW : chartW/2);
-    const y = padTop + chartH - (b.gains/niceMax)*chartH;
-    return [x,y];
-  });
-  const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
-  const line = document.createElementNS(ns,'path');
-  line.setAttribute('d', path);
-  line.setAttribute('fill','none'); line.setAttribute('stroke','#6FA97C');
-  line.setAttribute('stroke-width','2.5'); line.setAttribute('stroke-linecap','round'); line.setAttribute('stroke-linejoin','round');
-  svg.appendChild(line);
-  pts.forEach(p=>{
-    const c = document.createElementNS(ns,'circle');
-    c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r','3'); c.setAttribute('fill','#6FA97C');
-    svg.appendChild(c);
+  const label0 = document.createElementNS(ns,'text');
+  label0.setAttribute('x', padLeft-6); label0.setAttribute('y', zeroY+3);
+  label0.setAttribute('text-anchor','end'); label0.setAttribute('font-size','7'); label0.setAttribute('fill','#9C96A3');
+  label0.textContent = '0€';
+  svg.appendChild(label0);
+
+  const n = buckets.length;
+  const slot = chartW / n;
+  const barW = Math.min(18, slot*0.55);
+
+  buckets.forEach((b, i)=>{
+    const cx = padLeft + slot*i + slot/2;
+    const isPos = b.gains >= 0;
+    const barH = Math.max(1.5, (Math.abs(b.gains)/totalRange)*chartH);
+    const y = isPos ? zeroY - barH : zeroY;
+    const color = isPos ? '#6FA97C' : '#C1554B';
+
+    const rect = document.createElementNS(ns,'rect');
+    rect.setAttribute('x', cx-barW/2); rect.setAttribute('y', y);
+    rect.setAttribute('width', barW); rect.setAttribute('height', barH);
+    rect.setAttribute('rx', 3);
+    rect.setAttribute('fill', color);
+    svg.appendChild(rect);
+
+    // Valeur au-dessus (si gain) ou en dessous (si perte) de la barre
+    const valText = document.createElementNS(ns,'text');
+    valText.setAttribute('x', cx);
+    valText.setAttribute('y', isPos ? (y-4) : (y+barH+9));
+    valText.setAttribute('text-anchor','middle');
+    valText.setAttribute('font-size','7');
+    valText.setAttribute('fill','#9C96A3');
+    const sign = b.gains > 0 ? '+' : (b.gains < 0 ? '-' : '');
+    valText.textContent = sign + Math.round(Math.abs(b.gains)) + '€';
+    svg.appendChild(valText);
   });
 
-  const midIdx = Math.floor((buckets.length-1)/2);
-  const idxs = [...new Set([0, midIdx, buckets.length-1])];
+  // Labels de semaine : premier, milieu, dernier
+  const midIdx = Math.floor((n-1)/2);
+  const idxs = [...new Set([0, midIdx, n-1])];
   idxs.forEach(i=>{
-    const [x] = pts[i];
-    const anchor = i===0 ? 'start' : (i===buckets.length-1 ? 'end' : 'middle');
+    const cx = padLeft + slot*i + slot/2;
+    const anchor = i===0 ? 'start' : (i===n-1 ? 'end' : 'middle');
     const txt = document.createElementNS(ns,'text');
-    txt.setAttribute('x', x); txt.setAttribute('y', h-4);
+    txt.setAttribute('x', cx); txt.setAttribute('y', h-4);
     txt.setAttribute('text-anchor', anchor); txt.setAttribute('font-size','7'); txt.setAttribute('fill','#9C96A3');
     txt.textContent = buckets[i].label;
     svg.appendChild(txt);
@@ -2117,6 +2374,7 @@ const GOALS_DEFAULT = [
   {key:'g31', title:"Étude d'écriture de 10 spectacles (Yacine Belhoussine)", type:'tap', target:10},
   {key:'g32', title:'Tester 30 nouveaux sujets',          type:'tap',     target:30},
   {key:'g9',  title:'Publier 15 minutes sur les réseaux', type:'manual',  target:15, unit:'min'},
+  {key:'g28', title:'Faire MC',                           type:'boolean'},
 
   {type:'divider', title:'Promo & visibilité'},
   {key:'g10', title:'Publier 30 vidéos',                  type:'tap',     target:30},
@@ -2136,7 +2394,8 @@ const GOALS_DEFAULT = [
   {key:'g22', title:'Capter 20 humoristes',                type:'name_list', target:20, itemLabel:"Nom de l'humoriste"},
 
   {type:'divider', title:'Vie perso & discipline'},
-  {key:'g28', title:'Faire MC',                           type:'boolean'},
+  {key:'g27', title:'Arrêter le cannabis (6 mois)',       type:'boolean'},
+  {key:'g30', title:'Trouver un CDI',                     type:'boolean'},
 ];
 
 const GOALS_STORE_KEY = 'backstage_goals_v1';
@@ -2345,7 +2604,7 @@ function computeStarRating(){
   const scenesPerMonth = recent60.length / 2;
   const ratioFreq = Math.min(scenesPerMonth/15, 1);
 
-  const gainsPerMonth = recent60.reduce((a,s)=>a+(s.gains||0),0) / 2;
+  const gainsPerMonth = recent60.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0) / 2;
   const ratioMoney = Math.min(gainsPerMonth/500, 1);
 
   const overall = (ratioBeaux + ratioNote + ratioFreq + ratioMoney) / 4;
@@ -2473,171 +2732,329 @@ function textTotals(text){
   return {tested, validated};
 }
 
-/* ---------- Plan de rotation (paires de textes) ---------- */
-const ROTATION_STORE_KEY = 'backstage_rotation_v1';
-
-function loadRotation(){
-  let data;
-  try{
-    const saved = JSON.parse(localStorage.getItem(ROTATION_STORE_KEY) || 'null');
-    data = (saved && typeof saved === 'object') ? saved : {totalScenes: 40, pairs: []};
-  }catch(e){
-    data = {totalScenes: 40, pairs: []};
-  }
-  if(!data.totalScenes) data.totalScenes = 40;
-  if(!Array.isArray(data.pairs)) data.pairs = [];
-
-  // Migration : donne un créneau fixe et permanent à chaque paire qui n'en a pas encore.
-  let needsSave = false;
-  const usedSlots = new Set(data.pairs.filter(p=>p.slot).map(p=>p.slot));
-  data.pairs.forEach(p=>{
-    if(!p.slot){
-      let s = 1;
-      while(usedSlots.has(s)) s++;
-      p.slot = s;
-      usedSlots.add(s);
-      needsSave = true;
-    }
-  });
-  if(!data.slotCount){
-    data.slotCount = Math.max(0, ...data.pairs.map(p=>p.slot||0));
-    needsSave = true;
-  }
-  if(needsSave) saveRotation(data);
-  return data;
-}
-function saveRotation(data){
-  localStorage.setItem(ROTATION_STORE_KEY, JSON.stringify(data));
-}
-
-function nextFreeSlot(data){
-  const used = new Set(data.pairs.map(p=>p.slot));
-  let s = 1;
-  while(used.has(s)) s++;
-  if(s > data.slotCount) data.slotCount = s;
-  return s;
-}
-
-function computeRotationScenes(slot, slotCount, totalScenes){
-  const scenes = [];
-  let s = slot;
-  while(s <= totalScenes){ scenes.push(s); s += slotCount; }
-  return scenes;
-}
-
 function getTextName(id){
   const t = loadTexts().find(t=>t.id===id);
   return t ? t.name : '?';
 }
 
-function deleteRotationPair(pairId){
-  const data = loadRotation();
-  data.pairs = data.pairs.filter(p=>p.id!==pairId);
-  saveRotation(data);
-  renderRotationTable();
+/* ---------- Plan de rotation (sélection libre + recommandation dynamique) ---------- */
+const ROTATION2_STORE_KEY = 'backstage_rotation2_v1';
+
+function loadRotation2(){
+  let data;
+  try{
+    const saved = JSON.parse(localStorage.getItem(ROTATION2_STORE_KEY) || 'null');
+    data = (saved && typeof saved === 'object') ? saved : null;
+  }catch(e){ data = null; }
+
+  if(!data){
+    // Migration douce depuis l'ancien système par paires, si présent : on récupère
+    // simplement la liste des textes déjà impliqués.
+    let migratedIds = [];
+    try{
+      const old = JSON.parse(localStorage.getItem('backstage_rotation_v1') || 'null');
+      if(old && Array.isArray(old.pairs)){
+        const idSet = new Set();
+        old.pairs.forEach(p=>{ idSet.add(p.textIdA); idSet.add(p.textIdB); });
+        migratedIds = [...idSet];
+      }
+    }catch(e){}
+    data = {totalScenes: null, scenesUsed: 0, selectedIds: migratedIds};
+    localStorage.setItem(ROTATION2_STORE_KEY, JSON.stringify(data));
+  }
+  if(data.totalScenes === undefined) data.totalScenes = null;
+  if(!data.scenesUsed) data.scenesUsed = 0;
+  if(!Array.isArray(data.selectedIds)) data.selectedIds = [];
+  if(!Array.isArray(data.bonusIds)) data.bonusIds = [];
+  if(data.startedAt === undefined){
+    // Migration : si une rotation était déjà configurée sans date de départ,
+    // on la fixe à aujourd'hui pour que le décompte des sessions reste cohérent
+    // avec le compteur de scènes.
+    data.startedAt = data.totalScenes !== null ? new Date().toISOString().slice(0,10) : null;
+    saveRotation2(data);
+  }
+  return data;
+}
+function saveRotation2(data){
+  localStorage.setItem(ROTATION2_STORE_KEY, JSON.stringify(data));
+}
+
+function toggleRotationInclude(textId){
+  const data = loadRotation2();
+  const inCore = data.selectedIds.includes(textId);
+  const inBonus = data.bonusIds.includes(textId);
+
+  if(inCore || inBonus){
+    openRemovalReasonModal(textId, null);
+  } else {
+    data.selectedIds.push(textId);
+    saveRotation2(data);
+    renderTextsList();
+    renderRotationPlan();
+  }
+}
+
+let pendingRemoval = null;
+
+function openRemovalReasonModal(textId, thenNewId){
+  pendingRemoval = {id: textId, thenNewId: thenNewId || null};
+  document.getElementById('removal-reason-modal-overlay').style.display = 'flex';
+}
+function closeRemovalReasonModal(){
+  document.getElementById('removal-reason-modal-overlay').style.display = 'none';
+  pendingRemoval = null;
+}
+function resolveRemoval(reason){
+  if(!pendingRemoval) return;
+  const {id, thenNewId} = pendingRemoval;
+
+  const data = loadRotation2();
+  let idx = data.selectedIds.indexOf(id);
+  if(idx >= 0) data.selectedIds.splice(idx, 1);
+  else { idx = data.bonusIds.indexOf(id); if(idx >= 0) data.bonusIds.splice(idx, 1); }
+
+  if(thenNewId){
+    // Catégorie du nouveau texte déduite automatiquement de la raison du retrait :
+    // ça ne marchait pas → priorité (à tester d'urgence) ; c'était fini → bonus.
+    if(reason === 'broken') data.selectedIds.push(thenNewId);
+    else data.bonusIds.push(thenNewId);
+  }
+  saveRotation2(data);
+
+  const texts = loadTexts();
+  const tIdx = texts.findIndex(t=>t.id===id);
+  if(tIdx >= 0){
+    texts[tIdx].finishedOverride = (reason === 'finished');
+    saveTexts(texts);
+  }
+
+  document.getElementById('removal-reason-modal-overlay').style.display = 'none';
+  pendingRemoval = null;
+  replaceOpenForTextId = null;
   renderTextsList();
+  renderRotationPlan();
+  if(thenNewId) showToast('Texte remplacé ✓');
 }
 
-function updateRotationTotalScenes(val){
-  let v = parseInt(val, 10);
-  if(isNaN(v) || v<1) v = 40;
-  const data = loadRotation();
+function openRotationScenesModal(){
+  const data = loadRotation2();
+  document.getElementById('rotation-scenes-modal-input').value = data.totalScenes || '';
+  document.getElementById('rotation-scenes-modal-overlay').style.display = 'flex';
+}
+function closeRotationScenesModal(){
+  document.getElementById('rotation-scenes-modal-overlay').style.display = 'none';
+}
+function confirmRotationScenes(){
+  let v = parseInt(document.getElementById('rotation-scenes-modal-input').value, 10);
+  if(isNaN(v) || v<1) return;
+  const data = loadRotation2();
+  const isFirstSetup = data.totalScenes === null;
   data.totalScenes = v;
-  saveRotation(data);
-  renderRotationTable();
+  if(isFirstSetup) data.startedAt = new Date().toISOString().slice(0,10);
+  saveRotation2(data);
+  closeRotationScenesModal();
+  renderRotationPlan();
 }
 
-function toggleRotationCheck(pairId, sceneNum){
-  const data = loadRotation();
-  const pair = data.pairs.find(p=>p.id===pairId);
-  if(!pair) return;
-  pair.checks[sceneNum] = !pair.checks[sceneNum];
-  saveRotation(data);
-  renderRotationTable();
+// Remplacement d'un texte de la rotation par un autre — une seule question
+// (pourquoi tu le retires), la catégorie du nouveau en découle automatiquement.
+let replaceOpenForTextId = null;
+function toggleReplacePicker(textId){
+  replaceOpenForTextId = (replaceOpenForTextId === textId) ? null : textId;
+  renderRotationPlan();
+}
+function pickReplacementCandidate(oldId, newId){
+  openRemovalReasonModal(oldId, newId);
 }
 
-function populateTextNamesDatalist(){
-  const dl = document.getElementById('all-text-names-list');
-  if(!dl) return;
-  const names = [...new Set(loadTexts().map(t=>t.name))];
-  dl.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+// Classe chaque texte : priorité d'abord (triés par urgence, moins de sessions
+// en tête), puis les bonus à la suite (jamais prioritaires, même à 0 session —
+// c'est de l'avance prise pour la prochaine rotation, pas la rotation en cours).
+function buildStatusEntry(t, startedAt){
+  const {tested, validated} = textTotals(t);
+  const sessionsCount = startedAt
+    ? t.sessions.filter(s => s.date && s.date >= startedAt).length
+    : t.sessions.length;
+  return {
+    text: t, tested, validated,
+    sessionsCount,
+    remaining: Math.max(0, TEXT_TARGET - validated),
+    done: validated >= TEXT_TARGET
+  };
+}
+function sortByUrgency(arr){
+  arr.sort((a,b)=>{
+    if(a.done !== b.done) return a.done ? 1 : -1;
+    if(a.sessionsCount !== b.sessionsCount) return a.sessionsCount - b.sessionsCount;
+    return b.remaining - a.remaining;
+  });
+  return arr;
 }
 
-function renderRotationTable(){
-  const data = loadRotation();
-  const totalInput = document.getElementById('rotation-total-scenes');
-  if(totalInput) totalInput.value = data.totalScenes;
+function computeRotationStatus(){
+  const data = loadRotation2();
+  const allTexts = loadTexts();
 
-  const wrap = document.getElementById('rotation-pairs-list');
+  const core = sortByUrgency(
+    data.selectedIds.map(id => allTexts.find(t=>t.id===id)).filter(Boolean).map(t=>buildStatusEntry(t, data.startedAt))
+  );
+  const bonus = sortByUrgency(
+    data.bonusIds.map(id => allTexts.find(t=>t.id===id)).filter(Boolean).map(t=>buildStatusEntry(t, data.startedAt))
+  );
+
+  // Priorité réelle : d'abord le moins de sessions jouées, et parmi ceux à
+  // égalité, celui qui a le moins de blagues validées (le plus loin de l'objectif).
+  const active = core.filter(x=>!x.done);
+  let minActiveCount = null, maxRemainingAtMin = null;
+  if(active.length){
+    minActiveCount = Math.min(...active.map(x=>x.sessionsCount));
+    const tied = active.filter(x=>x.sessionsCount === minActiveCount);
+    maxRemainingAtMin = Math.max(...tied.map(x=>x.remaining));
+  }
+
+  // Estimation du nombre de tests à viser la prochaine fois, pour finir dans les
+  // clous : on part de l'hypothèse de 2 textes testés par session en moyenne
+  // (le vrai chiffre variera, mais ça donne un ordre de grandeur fiable).
+  const ASSUMED_TEXTS_PER_SESSION = 2;
+  if(data.totalScenes !== null){
+    const remainingScenes = Math.max(0, data.totalScenes - data.scenesUsed);
+    const expectedRemainingTurns = active.length
+      ? (remainingScenes * ASSUMED_TEXTS_PER_SESSION) / active.length
+      : 0;
+    active.forEach(x=>{
+      const remainingTestsNeeded = x.remaining / SUCCESS_RATE;
+      x.rate = expectedRemainingTurns > 0
+        ? Math.ceil(remainingTestsNeeded / expectedRemainingTurns)
+        : Math.ceil(remainingTestsNeeded);
+    });
+  } else {
+    active.forEach(x=>{ x.rate = null; });
+  }
+
+  return {data, core, bonus, minActiveCount, maxRemainingAtMin};
+}
+
+function renderRotationScenesConfig(data){
+  const wrap = document.getElementById('rotation-scenes-config');
   if(!wrap) return;
+  if(data.totalScenes === null){
+    wrap.innerHTML = `
+      <button class="row-btn" onclick="openRotationScenesModal()">
+        <span>Choisir le nombre de scènes pour cette rotation</span>
+        <span class="arrow">›</span>
+      </button>
+    `;
+  } else {
+    wrap.innerHTML = `
+      <div class="rotation-scenes-row">
+        <span onclick="openRotationScenesModal()" style="cursor:pointer;">Scène <strong>${data.scenesUsed}</strong>/<strong>${data.totalScenes}</strong></span>
+        <button class="icon-trash-btn small" onclick="openRotationScenesModal()" title="Modifier">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        </button>
+      </div>
+    `;
+  }
+}
 
-  if(!data.pairs.length){
-    wrap.innerHTML = `<div class="empty">Pas encore de paire. Crée-en une au-dessus (tape le nom de 2 textes — nouveaux ou existants).</div>`;
+function renderRotationStatusRow(x, data, allTexts, isUrgent, isBonus){
+  const pct = Math.min(100, (x.validated/TEXT_TARGET)*100);
+  let metaText;
+  if(x.done){
+    metaText = `${x.sessionsCount} session(s) jouée(s) · terminé ✓`;
+  } else if(isBonus){
+    metaText = `${x.sessionsCount} session(s) jouée(s) · bonus, pas prioritaire`;
+  } else if(x.rate !== null && x.rate !== undefined){
+    metaText = `${x.sessionsCount} session(s) jouée(s) · <strong style="color:var(--accent);">≈ ${x.rate} tests</strong> la prochaine fois`;
+  } else {
+    metaText = `${x.sessionsCount} session(s) jouée(s) · choisis un nombre de scènes pour avoir une estimation`;
+  }
+
+  const replaceOpen = replaceOpenForTextId === x.text.id;
+  const takenIds = [...data.selectedIds, ...data.bonusIds];
+  const candidates = allTexts.filter(t => !takenIds.includes(t.id));
+  const replaceHtml = `
+    <button class="icon-trash-btn small" onclick="event.stopPropagation(); toggleReplacePicker(${x.text.id})" title="Remplacer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.7V12a9 9 0 0 1 15-6.7l3-2.9"/><path d="M7 21.9l-4-4 4-4"/><path d="M21 11.3V12a9 9 0 0 1-15 6.7l-3 2.9"/></svg>
+    </button>
+    <button class="icon-trash-btn small" onclick="event.stopPropagation(); openRemovalReasonModal(${x.text.id}, null)" title="Retirer de la rotation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+    </button>
+  `;
+  const pickerHtml = replaceOpen ? `
+    <div class="pair-selector" style="margin-top:8px;">
+      ${candidates.length ? candidates.map(c=>`
+        <button class="pair-candidate" onclick="event.stopPropagation(); pickReplacementCandidate(${x.text.id}, ${c.id})">${escapeHtml(c.name)}</button>
+      `).join('') : `<div class="empty" style="padding:8px;">Aucun autre texte disponible</div>`}
+    </div>
+  ` : '';
+
+  return `
+    <div class="rotation-status-row${x.done?' done':''}${isUrgent?' urgent':''}${isBonus?' bonus-row':''}" onclick="openTextDetail(${x.text.id})" style="cursor:pointer;">
+      <div class="rotation-status-top">
+        <span class="rotation-status-name">${isBonus ? '⭐ ' : ''}${escapeHtml(x.text.name)}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="rotation-status-count">${x.validated}/${TEXT_TARGET}</span>
+          ${replaceHtml}
+        </div>
+      </div>
+      <div class="bar-track" style="height:5px;margin-top:5px;"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="rotation-status-meta">${metaText}</div>
+      ${pickerHtml}
+    </div>
+  `;
+}
+
+function renderRotationPlan(){
+  const statusList = document.getElementById('rotation-status-list');
+  if(!statusList) return;
+
+  const {data, core, bonus, minActiveCount, maxRemainingAtMin} = computeRotationStatus();
+  renderRotationScenesConfig(data);
+  updateRotationCountRowVisibility(data);
+
+  if(!core.length && !bonus.length){
+    statusList.innerHTML = `<div class="empty">Sélectionne des textes ci-dessous (bouton "+ Rotation" sur chaque carte) pour démarrer un plan.</div>`;
     return;
   }
 
-  const totalTestsNeeded = Math.ceil(TEXT_TARGET / SUCCESS_RATE); // ex: 12/0.1 = 120
+  const allTexts = loadTexts();
 
-  // Le créneau (utilisé pour le calcul des scènes) est fixe et permanent par paire — il ne bouge jamais.
-  const computed = data.pairs.map(pair=>{
-    const scenes = computeRotationScenes(pair.slot, data.slotCount, data.totalScenes);
-    const testsPerScene = scenes.length ? Math.ceil(totalTestsNeeded / scenes.length) : 0;
-    const nextScene = scenes.find(sc => !pair.checks[sc]);
-    return {pair, scenes, testsPerScene, nextScene: nextScene === undefined ? Infinity : nextScene};
-  });
-
-  // L'affichage, lui, se trie par prochaine scène à venir (la paire la plus proche remonte en haut).
-  computed.sort((a,b)=> a.nextScene - b.nextScene);
-
-  wrap.innerHTML = computed.map(({pair, scenes, testsPerScene, nextScene})=>{
-    const nameA = getTextName(pair.textIdA);
-    const nameB = getTextName(pair.textIdB);
-    const done = nextScene === Infinity;
-    const checkedCount = scenes.filter(sc => pair.checks[sc]).length;
-
-    const bodyHtml = done
-      ? `<div class="pair-meta">Terminé — ${checkedCount}/${scenes.length} scènes faites 🎉</div>`
-      : `
-        <div class="pair-meta">${testsPerScene} tests/scène par texte · prochaine scène : ${nextScene}</div>
-        <div class="scene-chip-row">
-          ${scenes.filter(sc => pair.checks[sc] || sc === nextScene).map(sc=>{
-            const checked = !!pair.checks[sc];
-            return `<button class="scene-chip ${checked?'checked':''}" onclick="toggleRotationCheck(${pair.id}, ${sc})">${sc}</button>`;
-          }).join('')}
-        </div>
-      `;
-
-    return `
-      <div class="pair-card${done ? ' finished' : ''}">
-        <div class="pair-card-top">
-          <div class="pair-names">${escapeHtml(nameA)}<span class="pair-amp">&</span>${escapeHtml(nameB)}</div>
-          <button class="icon-trash-btn small" onclick="deleteRotationPair(${pair.id})" title="Supprimer la paire">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-          </button>
-        </div>
-        ${bodyHtml}
-      </div>
-    `;
+  const coreHtml = core.map(x=>{
+    const isUrgent = !x.done
+      && minActiveCount !== null
+      && x.sessionsCount === minActiveCount
+      && x.remaining === maxRemainingAtMin;
+    return renderRotationStatusRow(x, data, allTexts, isUrgent, false);
   }).join('');
+
+  const bonusHtml = bonus.length ? `
+    <div class="section-label" style="margin-top:18px;">Bonus (prochaine rotation)</div>
+    ${bonus.map(x => renderRotationStatusRow(x, data, allTexts, false, true)).join('')}
+  ` : '';
+
+  statusList.innerHTML = coreHtml + bonusHtml;
 }
 
-let pairingOpenForTextId = null;
+/* ---------- Case "cette scène compte dans la rotation" (formulaire Noter) ---------- */
+let rotationCountThisScene = true;
 
-function togglePairSelector(textId){
-  pairingOpenForTextId = (pairingOpenForTextId === textId) ? null : textId;
-  renderTextsList();
+function updateRotationCountRowVisibility(data){
+  const row = document.getElementById('rotation-count-row');
+  if(!row) return;
+  const active = data.totalScenes !== null && (data.selectedIds.length > 0 || data.bonusIds.length > 0);
+  row.style.display = active ? 'flex' : 'none';
+  rotationCountThisScene = true;
+  const btn = document.getElementById('rotation-count-toggle');
+  if(btn) btn.classList.add('done');
 }
 
-function choosePairPartner(textIdA, textIdB){
-  const data = loadRotation();
-  const slot = nextFreeSlot(data);
-  data.pairs.push({id: Date.now(), textIdA, textIdB, slot, checks:{}});
-  saveRotation(data);
-  pairingOpenForTextId = null;
-  renderTextsList();
-  renderRotationTable();
-  showToast('Paire créée ✓');
+function toggleRotationCountScene(){
+  rotationCountThisScene = !rotationCountThisScene;
+  const btn = document.getElementById('rotation-count-toggle');
+  if(btn) btn.classList.toggle('done', rotationCountThisScene);
 }
+
+
 
 function addNewText(){
   const input = document.getElementById('new-text-name');
@@ -2651,49 +3068,76 @@ function addNewText(){
   showToast('Texte créé ✓');
 }
 
+function isTextFinished(t){
+  if(t.finishedOverride === true) return true;
+  if(t.finishedOverride === false) return false;
+  return textTotals(t).validated >= TEXT_TARGET;
+}
+
+function unfinishText(textId){
+  const texts = loadTexts();
+  const idx = texts.findIndex(t=>t.id===textId);
+  if(idx >= 0){
+    texts[idx].finishedOverride = false;
+    saveTexts(texts);
+  }
+  renderTextsList();
+}
+
 function renderTextsList(){
   const list = loadTexts();
   const wrap = document.getElementById('texts-list');
+  const finishedWrap = document.getElementById('finished-texts-list');
   if(!list.length){
     wrap.innerHTML = `<div class="empty">Pas encore de texte suivi.<br>Crée-en un depuis "Noter".</div>`;
+    if(finishedWrap) finishedWrap.innerHTML = '';
     return;
   }
 
-  const pairedIds = new Set();
-  loadRotation().pairs.forEach(p=>{ pairedIds.add(p.textIdA); pairedIds.add(p.textIdB); });
+  const rotationData = loadRotation2();
+  const inCore = new Set(rotationData.selectedIds);
+  const inBonus = new Set(rotationData.bonusIds);
+
+  const activeList = list.filter(t => !isTextFinished(t));
+  const finishedList = list.filter(t => isTextFinished(t));
+
+  const sortedList = activeList.slice().sort((a,b)=>{
+    const aIn = inCore.has(a.id) || inBonus.has(a.id);
+    const bIn = inCore.has(b.id) || inBonus.has(b.id);
+    if(aIn !== bIn) return aIn ? -1 : 1;
+    const aValidated = textTotals(a).validated;
+    const bValidated = textTotals(b).validated;
+    return bValidated - aValidated;
+  });
 
   wrap.innerHTML = '';
-  list.forEach(t=>{
+  if(!sortedList.length){
+    wrap.innerHTML = `<div class="empty">Aucun texte actif pour l'instant.</div>`;
+  }
+  sortedList.forEach(t=>{
     const {tested, validated} = textTotals(t);
-    const finished = validated >= TEXT_TARGET;
     const pct = Math.min(100, (validated/TEXT_TARGET)*100);
-    const isPaired = pairedIds.has(t.id);
-    const selectorOpen = pairingOpenForTextId === t.id;
+    const isCore = inCore.has(t.id);
+    const isBonus = inBonus.has(t.id);
 
     const card = document.createElement('div');
-    card.className = 'text-card' + (finished?' finished':'');
+    card.className = 'text-card';
     card.onclick = (e)=>{
-      if(e.target.closest('.pair-btn') || e.target.closest('.pair-selector')) return;
+      if(e.target.closest('.pair-btn')) return;
       openTextDetail(t.id);
     };
 
-    const pairBtnHtml = isPaired ? '' : `
-      <button class="pair-btn" onclick="event.stopPropagation(); togglePairSelector(${t.id})">
-        ${selectorOpen ? 'Annuler' : '🔗'}
+    let btnClass = 'pair-btn';
+    let btnLabel = '+ Rotation';
+    let btnTitle = 'Ajouter à la rotation';
+    if(isCore){ btnClass += ' active'; btnLabel = '🔥 Rotation'; btnTitle = 'Retirer de la rotation'; }
+    else if(isBonus){ btnClass += ' bonus'; btnLabel = '⭐ Bonus'; btnTitle = 'Retirer des bonus'; }
+
+    const pairBtnHtml = `
+      <button class="${btnClass}" onclick="event.stopPropagation(); toggleRotationInclude(${t.id})" title="${btnTitle}">
+        ${btnLabel}
       </button>
     `;
-
-    let selectorHtml = '';
-    if(!isPaired && selectorOpen){
-      const candidates = list.filter(other => other.id !== t.id && !pairedIds.has(other.id));
-      selectorHtml = `
-        <div class="pair-selector">
-          ${candidates.length ? candidates.map(c=>`
-            <button class="pair-candidate" onclick="event.stopPropagation(); choosePairPartner(${t.id}, ${c.id})">${escapeHtml(c.name)}</button>
-          `).join('') : `<div class="empty" style="padding:10px;">Aucun autre texte disponible</div>`}
-        </div>
-      `;
-    }
 
     card.innerHTML = `
       <div class="text-card-top">
@@ -2704,10 +3148,37 @@ function renderTextsList(){
         </div>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      ${selectorHtml}
     `;
     wrap.appendChild(card);
   });
+
+  if(finishedWrap){
+    if(!finishedList.length){
+      finishedWrap.innerHTML = `<div class="empty">Aucun texte fini pour l'instant.</div>`;
+    } else {
+      finishedWrap.innerHTML = '';
+      finishedList.forEach(t=>{
+        const {validated} = textTotals(t);
+        const card = document.createElement('div');
+        card.className = 'text-card finished';
+        card.onclick = (e)=>{
+          if(e.target.closest('.pair-btn')) return;
+          openTextDetail(t.id);
+        };
+        card.innerHTML = `
+          <div class="text-card-top">
+            <div class="text-card-name">${escapeHtml(t.name)}</div>
+            <div class="text-card-top-right">
+              <button class="pair-btn" onclick="event.stopPropagation(); unfinishText(${t.id})" title="Remettre dans la liste active">↩ Remettre</button>
+              <div class="text-card-count">${validated}/${TEXT_TARGET}</div>
+            </div>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        `;
+        finishedWrap.appendChild(card);
+      });
+    }
+  }
 }
 
 function openTextDetail(id){
@@ -2722,6 +3193,45 @@ function closeTextDetail(){
   document.getElementById('tests-detail-view').style.display = 'none';
   document.getElementById('tests-list-view').style.display = 'block';
   renderTextsList();
+}
+
+function openEditValidatedModal(){
+  const t = getCurrentText();
+  if(!t) return;
+  const {validated} = textTotals(t);
+  document.getElementById('editvalidated-modal-input').value = validated;
+  document.getElementById('editvalidated-modal-overlay').style.display = 'flex';
+}
+function closeEditValidatedModal(){
+  document.getElementById('editvalidated-modal-overlay').style.display = 'none';
+}
+function confirmEditValidated(){
+  const t = getCurrentText();
+  if(!t) return;
+  let newVal = parseInt(document.getElementById('editvalidated-modal-input').value, 10);
+  if(isNaN(newVal) || newVal < 0) newVal = 0;
+
+  const {validated: current} = textTotals(t);
+  const delta = newVal - current;
+
+  if(delta !== 0){
+    const texts = loadTexts();
+    const idx = texts.findIndex(x=>x.id===currentTextId);
+    texts[idx].sessions.push({
+      id: Date.now(),
+      date: new Date().toISOString().slice(0,10),
+      tested: 0,
+      validated: delta,
+      plateau: null,
+      manual: true
+    });
+    saveTexts(texts);
+  }
+
+  closeEditValidatedModal();
+  renderTextDetail();
+  renderHomeRating();
+  showToast('Mis à jour ✓');
 }
 
 function getCurrentText(){
@@ -2864,15 +3374,23 @@ function renderSessionsList(t){
     wrap.innerHTML = `<div class="empty">Aucune session enregistrée.</div>`;
     return;
   }
-  wrap.innerHTML = sessions.map(s=>`
+  wrap.innerHTML = sessions.map(s=>{
+    const label = s.manual
+      ? 'Ajustement manuel'
+      : (s.plateau ? escapeHtml(s.plateau) : '');
+    const resHtml = s.manual
+      ? `<span class="${s.validated>=0?'ok':'no'}">${s.validated>=0?'+':''}${s.validated} validée(s)</span>`
+      : `<span class="ok">${s.validated||0} réussi(es)</span> / <span class="no">${s.tested||0} testé(es)</span>`;
+    return `
     <div class="session-item">
-      <div class="sdate">${formatDate(s.date)}${s.plateau ? ' · '+escapeHtml(s.plateau) : ''}</div>
-      <div class="sres"><span class="ok">${s.validated||0} réussi(es)</span> / <span class="no">${s.tested||0} testé(es)</span></div>
+      <div class="sdate">${formatDate(s.date)}${label ? ' · '+label : ''}</div>
+      <div class="sres">${resHtml}</div>
       <button class="icon-trash-btn small" onclick="deleteSession(${s.id})" title="Supprimer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
       </button>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function deleteSession(sessionId){
@@ -2887,10 +3405,17 @@ function deleteSession(sessionId){
 function deleteCurrentText(){
   const list = loadTexts().filter(t=>t.id!==currentTextId);
   saveTexts(list);
+
+  const rotationData = loadRotation2();
+  const idxCore = rotationData.selectedIds.indexOf(currentTextId);
+  if(idxCore >= 0) rotationData.selectedIds.splice(idxCore, 1);
+  const idxBonus = rotationData.bonusIds.indexOf(currentTextId);
+  if(idxBonus >= 0) rotationData.bonusIds.splice(idxBonus, 1);
+  saveRotation2(rotationData);
+
   closeTextDetail();
   renderHomeRating();
-  populateTextNamesDatalist();
-  renderRotationTable();
+  renderRotationPlan();
 }
 
 /* ---------- Export / Import ---------- */
@@ -2908,7 +3433,7 @@ function exportBackstageData(){
     scenes: JSON.parse(localStorage.getItem('backstage_scenes_v1') || '[]'),
     goals: JSON.parse(localStorage.getItem('backstage_goals_v1') || '{}'),
     texts: JSON.parse(localStorage.getItem('backstage_texts_v1') || '[]'),
-    rotation: JSON.parse(localStorage.getItem('backstage_rotation_v1') || 'null')
+    rotation2: JSON.parse(localStorage.getItem('backstage_rotation2_v1') || 'null')
   };
   const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -2933,7 +3458,7 @@ function importBackstageData(file){
       localStorage.setItem('backstage_scenes_v1', JSON.stringify(data.scenes || []));
       localStorage.setItem('backstage_goals_v1', JSON.stringify(data.goals || {}));
       localStorage.setItem('backstage_texts_v1', JSON.stringify(data.texts || []));
-      if(data.rotation) localStorage.setItem('backstage_rotation_v1', JSON.stringify(data.rotation));
+      if(data.rotation2) localStorage.setItem('backstage_rotation2_v1', JSON.stringify(data.rotation2));
       showToast('Données restaurées ✓');
       document.getElementById('import-file-input').value = '';
       renderHomeRating();
