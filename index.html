@@ -191,6 +191,17 @@
     flex-direction:column;
     gap:10px;
   }
+  .btn-grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .btn-grid-2 .row-btn{
+    padding:13px 10px;
+  }
+  .btn-grid-2 .row-btn .label-group span{
+    font-size:13px;
+  }
   .big-btn{
     width:100%;
     border:none;
@@ -602,6 +613,135 @@
     margin-top:5px;
   }
 
+  .day-accordion{
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:8px;
+    overflow:hidden;
+    background:var(--surface);
+  }
+  .day-accordion-header{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--surface-2);
+    border:none;
+    padding:12px 14px;
+    color:var(--text);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    text-align:left;
+  }
+  .day-accordion-content{
+    padding:10px;
+    background:var(--bg);
+  }
+
+  .plateau-row{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:9px 11px;
+    margin-bottom:6px;
+  }
+  .plateau-row:last-child{margin-bottom:0;}
+  .plateau-row-name{
+    font-size:13px;
+    font-weight:700;
+  }
+  .plateau-row-meta{
+    font-size:10.5px;
+    color:var(--text-dim);
+    margin-top:2px;
+  }
+  .day-chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:6px;
+  }
+  .day-chip{
+    flex:1;
+    min-width:38px;
+    padding:9px 0;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text-dim);
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .day-chip.selected{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#1A1508;
+  }
+  .plateau-type-dot{
+    display:inline-block;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    margin-right:6px;
+    flex-shrink:0;
+  }
+  .type-badge{
+    flex-shrink:0;
+    font-size:10px;
+    font-weight:800;
+    color:#0E1A11;
+    padding:4px 9px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .plateau-action-col{
+    display:flex;
+    flex-direction:row;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .plateau-action-btn{
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:7px;
+    font-size:13px;
+    cursor:pointer;
+    text-decoration:none;
+  }
+
+  .time-slot-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .time-slot-row input[type=text]{
+    flex:1;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 10px;
+    color:var(--text);
+    font-size:13px;
+  }
+  .score-row.mini{
+    gap:5px;
+  }
+  .score-btn.small{
+    width:28px;
+    height:28px;
+    font-size:12px;
+    padding:0;
+  }
+
   .session-item{
     display:flex;
     justify-content:space-between;
@@ -663,6 +803,19 @@
   .backlink{
     background:none;border:none;color:var(--text-dim);font-size:13px;font-weight:700;
     padding:4px 0 10px;cursor:pointer;
+  }
+
+  .delete-link-btn{
+    display:block;
+    width:100%;
+    background:none;
+    border:none;
+    color:var(--s0);
+    font-size:13px;
+    font-weight:700;
+    padding:12px 0 4px;
+    cursor:pointer;
+    text-align:center;
   }
 
   .goal-theme-divider{
@@ -964,7 +1117,17 @@
         </div>
       </div>
 
-      <div class="btn-col" id="notion-buttons" style="margin-top:20px;">
+      <div id="home-today-plateaux" style="margin-top:20px;"></div>
+
+      <button class="row-btn" style="margin-top:12px;" onclick="openQuickAddPlateauModal()">
+        <span class="label-group">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>
+          <span>+ Ajouter un plateau</span>
+        </span>
+        <span class="arrow">›</span>
+      </button>
+
+      <div class="btn-grid-2" id="notion-buttons" style="margin-top:20px;">
         <button class="row-btn" onclick="window.open('https://app.notion.com/p/TEXTES-3c91528089b78038b760f17984faebe7?source=copy_link', '_blank')">
           <span class="label-group">
             <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
@@ -1007,13 +1170,20 @@
           </span>
           <span class="arrow">›</span>
         </button>
-        <a class="row-btn" href="intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=biz.codespark.xcalendarapp;end" style="text-decoration:none;">
+        <button class="row-btn" onclick="window.open('https://app.notion.com/p/Impros-7ea3fd65368a4b3c873f4f49f7db026b?source=copy_link', '_blank')">
           <span class="label-group">
-            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
-            <span>Plateaux Paris</span>
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
+            <span>Impros</span>
           </span>
           <span class="arrow">›</span>
-        </a>
+        </button>
+        <button class="row-btn" onclick="goto('33')">
+          <span class="label-group">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
+            <span>Objectifs</span>
+          </span>
+          <span class="arrow">›</span>
+        </button>
       </div>
     </section>
 
@@ -1024,6 +1194,10 @@
         <label for="f-nom">Nom du plateau</label>
         <input type="text" id="f-nom" list="plateau-names-list" placeholder="Ex : Le Sous-Sol, open mic" autocomplete="off">
         <datalist id="plateau-names-list"></datalist>
+      </div>
+      <div id="plateau-timeslot-row" style="display:none;margin:-8px 0 14px;">
+        <div class="label" style="margin-bottom:6px;">Plusieurs séances existent, laquelle ?</div>
+        <div class="day-chip-row" id="plateau-timeslot-chips"></div>
       </div>
       <div class="field">
         <label for="f-date">Date</label>
@@ -1322,6 +1496,174 @@
       </div>
     </section>
 
+    <!-- PLATEAUX -->
+    <section class="view" id="view-plateaux">
+
+      <!-- Sous-vue liste -->
+      <div id="plateaux-list-view" style="margin-top:20px;">
+
+        <div id="pl-add-btn-wrap">
+          <button class="save-btn" style="width:100%;" onclick="openAddPlateauForm()">+ Ajouter un plateau</button>
+        </div>
+
+        <div id="pl-add-form" style="display:none;">
+          <div class="field">
+            <label for="pl-name">Nom</label>
+            <input type="text" id="pl-name">
+          </div>
+          <div class="field">
+            <label for="pl-city">Ville</label>
+            <input type="text" id="pl-city">
+          </div>
+
+          <div class="field">
+            <label>Jour(s)</label>
+            <div class="day-chip-row" id="pl-days-row">
+              <button type="button" class="day-chip" data-day="1" onclick="togglePlDay(1)">Lun</button>
+              <button type="button" class="day-chip" data-day="2" onclick="togglePlDay(2)">Mar</button>
+              <button type="button" class="day-chip" data-day="3" onclick="togglePlDay(3)">Mer</button>
+              <button type="button" class="day-chip" data-day="4" onclick="togglePlDay(4)">Jeu</button>
+              <button type="button" class="day-chip" data-day="5" onclick="togglePlDay(5)">Ven</button>
+              <button type="button" class="day-chip" data-day="6" onclick="togglePlDay(6)">Sam</button>
+              <button type="button" class="day-chip" data-day="0" onclick="togglePlDay(0)">Dim</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="pl-freq">Fréquence</label>
+            <select id="pl-freq" onchange="toggleAnchorField()">
+              <option value="1">Toutes les semaines</option>
+              <option value="2">Une semaine sur deux</option>
+              <option value="4">Tous les mois</option>
+              <option value="8">Tous les deux mois</option>
+            </select>
+          </div>
+          <div class="field" id="pl-anchor-field" style="display:none;">
+            <label for="pl-anchor">Une date où il a lieu (pour calculer le rythme)</label>
+            <input type="date" id="pl-anchor">
+          </div>
+
+          <div class="field">
+            <label>Séances (une carte sera créée par séance)</label>
+            <div id="pl-times-list" style="margin-top:6px;"></div>
+            <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addPlTimeRow()">+ Ajouter une séance</button>
+          </div>
+
+          <div class="field">
+            <label for="pl-address">Adresse</label>
+            <input type="text" id="pl-address" placeholder="Ex : 12 rue de la Paix, Paris">
+          </div>
+          <div class="field">
+            <label for="pl-instagram">Lien Instagram</label>
+            <input type="text" id="pl-instagram" placeholder="https://instagram.com/...">
+          </div>
+          <button class="save-btn" style="width:100%;" onclick="savePlateau()">Ajouter</button>
+          <button class="backlink" style="width:100%;text-align:center;" onclick="closeAddPlateauForm()">Annuler</button>
+        </div>
+
+        <div class="section-label" style="margin-top:26px;">Ville</div>
+        <div class="day-chip-row" id="pl-city-row" style="margin-top:8px;"></div>
+
+        <div class="section-label" style="margin-top:20px;">Cette semaine</div>
+        <div class="chart-legend" style="margin-bottom:8px;">
+          <div class="item"><span class="dot" style="background:var(--s2);"></span>Belle scène</div>
+          <div class="item"><span class="dot" style="background:var(--s1);"></span>Sympa</div>
+          <div class="item"><span class="dot" style="background:var(--s0);"></span>Nulle</div>
+        </div>
+        <div id="plateaux-upcoming" style="margin-top:8px;"></div>
+
+        <div class="section-label clickable" style="margin-top:26px;" onclick="toggleCollapse('plateaux-list-wrap')">
+          Tous les plateaux <span class="chevron" id="chevron-plateaux-list-wrap">›</span>
+        </div>
+        <div id="plateaux-list-wrap" style="display:none;">
+          <div id="plateaux-list" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Sous-vue détail d'un plateau -->
+      <div id="plateaux-detail-view" style="display:none;margin-top:20px;">
+        <button class="backlink" onclick="closePlateauDetail()">‹ Agenda</button>
+
+        <!-- Mode affichage -->
+        <div id="plateau-view-mode">
+          <div id="plateau-view-info"></div>
+          <button class="save-btn" style="width:100%;margin-top:14px;" onclick="enterPlateauEditMode()">Modifier</button>
+          <button class="delete-link-btn" onclick="deletePlateauFromDetail()">Supprimer ce plateau</button>
+        </div>
+
+        <!-- Mode édition -->
+        <div id="plateau-edit-mode" style="display:none;">
+          <div class="field">
+            <label for="ple-name">Nom</label>
+            <input type="text" id="ple-name">
+          </div>
+          <div class="field">
+            <label for="ple-city">Ville</label>
+            <input type="text" id="ple-city">
+          </div>
+
+          <div class="field">
+            <label>Jour(s)</label>
+            <div class="day-chip-row" id="ple-days-row">
+              <button type="button" class="day-chip" data-day="1" onclick="toggleEditDay(1)">Lun</button>
+              <button type="button" class="day-chip" data-day="2" onclick="toggleEditDay(2)">Mar</button>
+              <button type="button" class="day-chip" data-day="3" onclick="toggleEditDay(3)">Mer</button>
+              <button type="button" class="day-chip" data-day="4" onclick="toggleEditDay(4)">Jeu</button>
+              <button type="button" class="day-chip" data-day="5" onclick="toggleEditDay(5)">Ven</button>
+              <button type="button" class="day-chip" data-day="6" onclick="toggleEditDay(6)">Sam</button>
+              <button type="button" class="day-chip" data-day="0" onclick="toggleEditDay(0)">Dim</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ple-freq">Fréquence</label>
+            <select id="ple-freq" onchange="toggleEditAnchorField()">
+              <option value="1">Toutes les semaines</option>
+              <option value="2">Une semaine sur deux</option>
+              <option value="4">Tous les mois</option>
+              <option value="8">Tous les deux mois</option>
+            </select>
+          </div>
+          <div class="field" id="ple-anchor-field" style="display:none;">
+            <label for="ple-anchor">Une date où il a lieu (pour calculer le rythme)</label>
+            <input type="date" id="ple-anchor">
+          </div>
+
+          <div class="field" style="display:flex;gap:10px;">
+            <div style="flex:1;">
+              <label for="ple-time">Heure</label>
+              <input type="text" id="ple-time" placeholder="Ex : 20h30">
+            </div>
+          </div>
+          <div class="field">
+            <label>Type de plateau</label>
+            <div class="score-row" style="margin-top:6px;" id="ple-type-row">
+              <button type="button" class="score-btn" data-v="0" onclick="setEditType(0, this)">0</button>
+              <button type="button" class="score-btn" data-v="1" onclick="setEditType(1, this)">1</button>
+              <button type="button" class="score-btn" data-v="2" onclick="setEditType(2, this)">2</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ple-address">Adresse</label>
+            <input type="text" id="ple-address" placeholder="Ex : 12 rue de la Paix, Paris">
+          </div>
+          <div class="field">
+            <label for="ple-instagram">Lien Instagram</label>
+            <input type="text" id="ple-instagram" placeholder="https://instagram.com/...">
+          </div>
+          <button class="save-btn" style="width:100%;" onclick="saveEditedPlateau()">Enregistrer</button>
+          <button class="backlink" style="width:100%;text-align:center;" onclick="cancelPlateauEdit()">Annuler</button>
+        </div>
+
+        <div class="section-label" style="margin-top:26px;">Historique</div>
+        <div id="plateau-history" style="margin-top:8px;"></div>
+
+        <div class="section-label" style="margin-top:26px;">Thèmes abordés ici</div>
+        <div id="plateau-themes" style="margin-top:8px;"></div>
+      </div>
+    </section>
+
   </main>
 
   <nav class="bottom">
@@ -1338,13 +1680,13 @@
         <svg viewBox="0 0 24 24"><path d="M3 21V3"/><path d="M3 21h18"/><rect x="7" y="13" width="3" height="8"/><rect x="12.5" y="9" width="3" height="12"/><rect x="18" y="5" width="3" height="16"/></svg>
         Stats
       </button>
-      <button id="nav-33" onclick="goto('33')">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
-        33
-      </button>
       <button id="nav-tests" onclick="goto('tests')">
         <svg viewBox="0 0 24 24"><path d="M9 2h6"/><path d="M10 2v6.5L4.5 18a1.2 1.2 0 0 0 1 1.8h13a1.2 1.2 0 0 0 1-1.8L14 8.5V2"/><path d="M7.5 14.5h9"/></svg>
         Tests
+      </button>
+      <button id="nav-plateaux" onclick="goto('plateaux')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+        Agenda
       </button>
     </div>
   </nav>
@@ -1404,6 +1746,23 @@
       <button class="modal-close" onclick="closeRemovalReasonModal()">Annuler</button>
     </div>
   </div>
+
+  <div id="newcity-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeNewCityModal()">
+    <div class="modal-card">
+      <div class="modal-title">Nouvelle ville</div>
+      <input type="text" id="newcity-modal-input" placeholder="Ex : Lyon" style="width:100%;text-align:center;font-size:16px;font-weight:700;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmNewCity()">Valider</button>
+      <button class="modal-close" onclick="closeNewCityModal()">Annuler</button>
+    </div>
+  </div>
+
+  <div id="quickadd-plateau-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeQuickAddPlateauModal()">
+    <div class="modal-card">
+      <input type="text" id="quickadd-plateau-input" placeholder="Nom du plateau" style="width:100%;text-align:center;font-size:16px;font-weight:700;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmQuickAddPlateau()">Ajouter</button>
+      <button class="modal-close" onclick="closeQuickAddPlateauModal()">Annuler</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1439,7 +1798,8 @@ function goto(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
   document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('nav-'+view).classList.add('active');
+  const navBtn = document.getElementById('nav-'+view);
+  if(navBtn) navBtn.classList.add('active');
   if(view==='home'){ renderHomeRating(); }
   if(view==='notation') resetForm();
   if(view==='stats') renderStats();
@@ -1451,9 +1811,693 @@ function goto(view){
     renderTextsList();
     renderRotationPlan();
   }
+  if(view==='plateaux'){
+    document.getElementById('plateaux-list-view').style.display = 'block';
+    document.getElementById('plateaux-detail-view').style.display = 'none';
+    currentPlateauId = null;
+    resetPlateauForm();
+    closeAddPlateauForm();
+    renderPlateauxView();
+  }
 }
 
-/* ---------- Liens Notion (privés, stockés uniquement en local) ---------- */
+/* ---------- Plateaux (planning récurrent) ---------- */
+const PLATEAUX_STORE_KEY = 'backstage_plateaux_v1';
+const DAY_NAMES_FR = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const DAY_ORDER_MON_FIRST = [1,2,3,4,5,6,0];
+
+let plSelectedDays = new Set();
+let plTimesDraft = [];
+let editSelectedDays = new Set();
+let editSelectedType = null;
+let currentPlateauId = null;
+
+function loadPlateaux(){
+  let list;
+  try{ list = JSON.parse(localStorage.getItem(PLATEAUX_STORE_KEY) || '[]'); }
+  catch(e){ list = []; }
+  if(!Array.isArray(list)) list = [];
+
+  // Migration douce : normalise les champs communs, puis éclate les fiches qui
+  // avaient plusieurs séances (times[]) en autant de fiches distinctes, chacune
+  // avec sa propre heure et son propre type — une carte = une séance.
+  let needsSave = false;
+  const expanded = [];
+  list.forEach(p=>{
+    if(!Array.isArray(p.days)){
+      p.days = (p.dayOfWeek !== undefined && p.dayOfWeek !== null) ? [p.dayOfWeek] : [];
+      delete p.dayOfWeek;
+      needsSave = true;
+    }
+    if(typeof p.interval !== 'number'){
+      if(p.frequency === 'biweekly') p.interval = 2;
+      else p.interval = 1;
+      delete p.frequency;
+      needsSave = true;
+    }
+    if(p.address === undefined){
+      p.address = p.location || '';
+      delete p.location;
+      needsSave = true;
+    }
+    if(p.instagram === undefined){ p.instagram = ''; needsSave = true; }
+    if(p.notes !== undefined){ delete p.notes; needsSave = true; }
+    if(p.city === undefined){ p.city = 'Paris'; needsSave = true; }
+
+    if(Array.isArray(p.times)){
+      needsSave = true;
+      if(!p.times.length){
+        const clone = {...p};
+        delete clone.times;
+        clone.time = '';
+        clone.type = null;
+        expanded.push(clone);
+      } else {
+        p.times.forEach((t,i)=>{
+          const clone = {...p};
+          delete clone.times;
+          clone.id = p.id + i;
+          clone.time = t.time || '';
+          clone.type = (t.type === undefined) ? null : t.type;
+          expanded.push(clone);
+        });
+      }
+    } else {
+      if(p.time === undefined){ p.time = ''; needsSave = true; }
+      if(p.type === undefined){ p.type = null; needsSave = true; }
+      expanded.push(p);
+    }
+  });
+  if(needsSave) savePlateaux(expanded);
+
+  return expanded;
+}
+function savePlateaux(list){
+  localStorage.setItem(PLATEAUX_STORE_KEY, JSON.stringify(list));
+}
+
+const PLATEAUX_CITY_KEY = 'backstage_plateaux_city_v1';
+let currentPlateauxCity = localStorage.getItem(PLATEAUX_CITY_KEY) || 'Paris';
+
+function setPlateauxCity(city){
+  currentPlateauxCity = city;
+  localStorage.setItem(PLATEAUX_CITY_KEY, city);
+  renderPlateauxView();
+}
+
+function openNewCityModal(){
+  document.getElementById('newcity-modal-input').value = '';
+  document.getElementById('newcity-modal-overlay').style.display = 'flex';
+}
+function closeNewCityModal(){
+  document.getElementById('newcity-modal-overlay').style.display = 'none';
+}
+function confirmNewCity(){
+  const name = document.getElementById('newcity-modal-input').value.trim();
+  if(!name) return;
+  closeNewCityModal();
+  setPlateauxCity(name);
+}
+
+function openQuickAddPlateauModal(){
+  document.getElementById('quickadd-plateau-input').value = '';
+  document.getElementById('quickadd-plateau-modal-overlay').style.display = 'flex';
+}
+function closeQuickAddPlateauModal(){
+  document.getElementById('quickadd-plateau-modal-overlay').style.display = 'none';
+}
+function confirmQuickAddPlateau(){
+  const name = document.getElementById('quickadd-plateau-input').value.trim();
+  if(!name){ showToast('Renseigne au moins un nom'); return; }
+
+  const plateaux = loadPlateaux();
+  const exists = plateaux.some(p => p.name.toLowerCase() === name.toLowerCase());
+  if(exists){
+    showToast('Ce plateau existe déjà dans Agenda');
+    closeQuickAddPlateauModal();
+    return;
+  }
+
+  plateaux.push({
+    id: Date.now(),
+    name,
+    city: currentPlateauxCity || 'Paris',
+    days: [],
+    interval: 1,
+    anchorDate: null,
+    time: '',
+    type: null,
+    address: '',
+    instagram: ''
+  });
+  savePlateaux(plateaux);
+
+  closeQuickAddPlateauModal();
+  showToast('Plateau ajouté ✓ à compléter dans Agenda');
+}
+
+function renderCityChips(){
+  const wrap = document.getElementById('pl-city-row');
+  if(!wrap) return;
+  const cities = [...new Set(loadPlateaux().map(p=>p.city || 'Paris'))];
+  if(!cities.includes('Paris')) cities.unshift('Paris'); else {
+    cities.splice(cities.indexOf('Paris'), 1);
+    cities.unshift('Paris');
+  }
+  if(!cities.includes(currentPlateauxCity)) cities.push(currentPlateauxCity);
+
+  wrap.innerHTML = cities.map(c=>`
+    <button type="button" class="day-chip${c===currentPlateauxCity?' selected':''}" style="flex:none;padding:9px 14px;" onclick="setPlateauxCity('${escapeHtml(c).replace(/'/g,"\\'")}')">${escapeHtml(c)}</button>
+  `).join('') + `
+    <button type="button" class="day-chip" style="flex:none;padding:9px 14px;" onclick="openNewCityModal()">+ Ville</button>
+  `;
+}
+
+function togglePlDay(day){
+  if(plSelectedDays.has(day)) plSelectedDays.delete(day);
+  else plSelectedDays.add(day);
+  const btn = document.querySelector(`#pl-days-row .day-chip[data-day="${day}"]`);
+  if(btn) btn.classList.toggle('selected', plSelectedDays.has(day));
+}
+function toggleEditDay(day){
+  if(editSelectedDays.has(day)) editSelectedDays.delete(day);
+  else editSelectedDays.add(day);
+  const btn = document.querySelector(`#ple-days-row .day-chip[data-day="${day}"]`);
+  if(btn) btn.classList.toggle('selected', editSelectedDays.has(day));
+}
+
+// --- Éditeur de séances (horaire + type) pour le formulaire d'ajout ---
+function renderPlTimesRows(){
+  const wrap = document.getElementById('pl-times-list');
+  wrap.innerHTML = plTimesDraft.map((slot,i)=>`
+    <div class="time-slot-row">
+      <input type="text" placeholder="Ex : 20h30" value="${escapeHtml(slot.time)}" oninput="plTimesDraft[${i}].time=this.value">
+      <div class="score-row mini">
+        <button type="button" class="score-btn small${slot.type===0?' selected':''}" data-v="0" onclick="setPlTimeType(${i},0,this)">0</button>
+        <button type="button" class="score-btn small${slot.type===1?' selected':''}" data-v="1" onclick="setPlTimeType(${i},1,this)">1</button>
+        <button type="button" class="score-btn small${slot.type===2?' selected':''}" data-v="2" onclick="setPlTimeType(${i},2,this)">2</button>
+      </div>
+      ${plTimesDraft.length>1 ? `<button type="button" class="icon-trash-btn small" onclick="removePlTimeRow(${i})">✕</button>` : ''}
+    </div>
+  `).join('');
+}
+function setPlTimeType(i, val, btn){
+  plTimesDraft[i].type = val;
+  btn.parentElement.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function addPlTimeRow(){
+  plTimesDraft.push({time:'', type:null});
+  renderPlTimesRows();
+}
+function removePlTimeRow(i){
+  plTimesDraft.splice(i,1);
+  renderPlTimesRows();
+}
+
+function setEditType(val, btn){
+  editSelectedType = val;
+  btn.parentElement.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function resetPlateauForm(){
+  plSelectedDays = new Set();
+  plTimesDraft = [{time:'', type:null}];
+  document.querySelectorAll('#pl-days-row .day-chip').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('pl-name').value = '';
+  document.getElementById('pl-city').value = currentPlateauxCity;
+  document.getElementById('pl-freq').value = '1';
+  document.getElementById('pl-anchor').value = '';
+  document.getElementById('pl-address').value = '';
+  document.getElementById('pl-instagram').value = '';
+  renderPlTimesRows();
+  toggleAnchorField();
+}
+
+function openAddPlateauForm(){
+  resetPlateauForm();
+  document.getElementById('pl-add-btn-wrap').style.display = 'none';
+  document.getElementById('pl-add-form').style.display = 'block';
+}
+function closeAddPlateauForm(){
+  document.getElementById('pl-add-form').style.display = 'none';
+  document.getElementById('pl-add-btn-wrap').style.display = 'block';
+}
+
+function toggleAnchorField(){
+  const freq = parseInt(document.getElementById('pl-freq').value, 10);
+  document.getElementById('pl-anchor-field').style.display = (freq > 1) ? 'block' : 'none';
+}
+function toggleEditAnchorField(){
+  const freq = parseInt(document.getElementById('ple-freq').value, 10);
+  document.getElementById('ple-anchor-field').style.display = (freq > 1) ? 'block' : 'none';
+}
+
+function isIntervalOccurring(anchorDateStr, targetDate, interval){
+  if(!anchorDateStr || interval <= 1) return true;
+  const anchor = new Date(anchorDateStr + 'T00:00:00');
+  const target = new Date(targetDate); target.setHours(0,0,0,0);
+  const diffDays = Math.round((target - anchor) / (1000*60*60*24));
+  const diffWeeks = Math.round(diffDays / 7);
+  return ((diffWeeks % interval) + interval) % interval === 0;
+}
+
+function doesPlateauOccur(p, targetDate){
+  if(!p.days || !p.days.includes(targetDate.getDay())) return false;
+  return isIntervalOccurring(p.anchorDate, targetDate, p.interval || 1);
+}
+
+function typeColorVar(t){
+  if(t === 2) return 'var(--s2)';
+  if(t === 1) return 'var(--s1)';
+  if(t === 0) return 'var(--s0)';
+  return 'var(--border)';
+}
+
+function typeLabelText(t){
+  if(t === 2) return 'Belle scène';
+  if(t === 1) return 'Scène sympa';
+  if(t === 0) return 'Scène nulle';
+  return null;
+}
+
+// Normalise l'affichage de l'heure pour toujours montrer l'unité : "17" → "17h",
+// "17:30" → "17h30", "17h"/"17h30" restent tels quels.
+function formatPlateauTime(raw){
+  if(!raw) return '';
+  const t = raw.trim();
+  if(/^\d{1,2}$/.test(t)) return t + 'h';
+  const colonMatch = t.match(/^(\d{1,2}):(\d{2})$/);
+  if(colonMatch){
+    const [, h, m] = colonMatch;
+    return m === '00' ? h+'h' : h+'h'+m;
+  }
+  return t;
+}
+
+// Convertit une heure saisie librement en minutes depuis minuit, pour pouvoir
+// trier chronologiquement. Retourne null si non reconnaissable (mis en fin de liste).
+function parseTimeToMinutes(raw){
+  if(!raw) return null;
+  const t = raw.trim();
+  let m = t.match(/^(\d{1,2})[h:](\d{2})?/i);
+  if(m){
+    const h = parseInt(m[1], 10);
+    const min = m[2] ? parseInt(m[2], 10) : 0;
+    return h*60 + min;
+  }
+  m = t.match(/^(\d{1,2})$/);
+  if(m) return parseInt(m[1], 10) * 60;
+  return null;
+}
+
+function sortPlateauxByTime(arr){
+  return arr.slice().sort((a,b)=>{
+    const ta = parseTimeToMinutes(a.time);
+    const tb = parseTimeToMinutes(b.time);
+    if(ta === null && tb === null) return 0;
+    if(ta === null) return 1;
+    if(tb === null) return -1;
+    return ta - tb;
+  });
+}
+
+// Heure et "Joué X fois" côte à côte, pour une carte plus compacte
+function plateauCompactMeta(p){
+  const parts = [];
+  if(p.time) parts.push(escapeHtml(formatPlateauTime(p.time)));
+  parts.push(`Joué ${getPlateauPlayCount(p.name)} fois`);
+  return `<div class="plateau-row-meta">${parts.join(' · ')}</div>`;
+}
+
+function mapsDirectionsUrl(address){
+  return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address);
+}
+
+function savePlateau(){
+  const name = document.getElementById('pl-name').value.trim();
+  if(!name){ showToast('Renseigne au moins un nom'); return; }
+
+  const interval = parseInt(document.getElementById('pl-freq').value, 10);
+  const anchorDate = document.getElementById('pl-anchor').value || null;
+  if(plSelectedDays.size && interval > 1 && !anchorDate){
+    showToast('Renseigne une date de référence pour cette fréquence');
+    return;
+  }
+
+  const city = document.getElementById('pl-city').value.trim() || 'Paris';
+  const address = document.getElementById('pl-address').value.trim();
+  const instagram = document.getElementById('pl-instagram').value.trim();
+  const slots = plTimesDraft
+    .map(s=>({time: s.time.trim(), type: s.type}))
+    .filter(s=>s.time || s.type !== null);
+
+  // Une fiche distincte par séance renseignée (au moins une, même vide, si rien
+  // n'a été précisé — pour permettre le "juste un nom pour l'instant").
+  const toCreate = slots.length ? slots : [{time:'', type:null}];
+
+  const list = loadPlateaux();
+  toCreate.forEach((slot, i)=>{
+    list.push({
+      id: Date.now() + i,
+      name,
+      city,
+      days: [...plSelectedDays],
+      interval,
+      anchorDate,
+      time: slot.time,
+      type: slot.type,
+      address, instagram
+    });
+  });
+  savePlateaux(list);
+
+  closeAddPlateauForm();
+  showToast('Plateau ajouté ✓');
+  setPlateauxCity(city);
+}
+
+function deletePlateau(id){
+  const list = loadPlateaux().filter(p=>p.id!==id);
+  savePlateaux(list);
+  renderPlateauxView();
+}
+
+function plateauActionsHtml(p){
+  const btns = [];
+  if(p.instagram){
+    btns.push(`<a class="plateau-action-btn" href="${escapeHtml(p.instagram)}" target="_blank" onclick="event.stopPropagation();">📷</a>`);
+  }
+  if(p.address){
+    btns.push(`<a class="plateau-action-btn" href="${mapsDirectionsUrl(p.address)}" target="_blank" onclick="event.stopPropagation();">📍</a>`);
+  }
+  if(!btns.length) return '';
+  return `<div class="plateau-action-col">${btns.join('')}</div>`;
+}
+
+// Un plateau reste dans "À compléter" tant qu'il n'a pas de jour, de fréquence
+// ET d'horaire renseignés.
+function isPlateauComplete(p){
+  return !!(p.days && p.days.length
+    && typeof p.interval === 'number' && p.interval > 0
+    && p.time && p.time.trim());
+}
+
+function plateauFreqLabel(interval){
+  if(interval===1) return 'Toutes les semaines';
+  if(interval===2) return '1 semaine sur 2';
+  if(interval===4) return 'Tous les mois';
+  if(interval===8) return 'Tous les deux mois';
+  return `Tous les ${interval} semaines`;
+}
+
+function getPlateauPlayCount(name){
+  return loadScenes().filter(s => s.nom === name).length;
+}
+
+function togglePlateauDayAccordion(i){
+  const content = document.getElementById('pl-day-content-'+i);
+  const chevron = document.getElementById('pl-day-chevron-'+i);
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? 'block' : 'none';
+  if(chevron) chevron.classList.toggle('open', isHidden);
+}
+
+function renderPlateauxView(){
+  toggleAnchorField();
+  renderCityChips();
+  const plateaux = loadPlateaux().filter(p => (p.city || 'Paris') === currentPlateauxCity);
+
+  const renderCard = (p)=>`
+    <div class="text-card" style="border-left:4px solid ${typeColorVar(p.type)};" onclick="openPlateauDetail(${p.id})">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div class="text-card-name">${escapeHtml(p.name)}</div>
+          ${plateauCompactMeta(p)}
+          ${isPlateauComplete(p) ? `<div class="plateau-row-meta">${plateauFreqLabel(p.interval || 1)}</div>` : `<div class="plateau-row-meta">Infos à compléter</div>`}
+        </div>
+        ${plateauActionsHtml(p)}
+      </div>
+    </div>
+  `;
+  const incomplete = plateaux.filter(p=>!isPlateauComplete(p));
+
+  // --- Cette semaine : les 7 jours à venir (accordéon, aujourd'hui ouvert),
+  // suivis d'un 8e accordéon "Infos à compléter" pour les plateaux sans jour ---
+  const upcomingWrap = document.getElementById('plateaux-upcoming');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayCards = [];
+  for(let i=0; i<7; i++){
+    const d = new Date(today); d.setDate(d.getDate()+i);
+    const isToday = i === 0;
+    const dayPlateaux = sortPlateauxByTime(plateaux.filter(p => isPlateauComplete(p) && doesPlateauOccur(p, d)));
+    const label = isToday ? "Aujourd'hui" : DAY_NAMES_FR[d.getDay()];
+    dayCards.push({dayIndex: i, dayName: label, isToday, dayPlateaux});
+  }
+
+  if(!plateaux.length){
+    upcomingWrap.innerHTML = `<div class="empty">Ajoute tes plateaux ci-dessous pour voir ton planning de la semaine.</div>`;
+  } else {
+    upcomingWrap.innerHTML = dayCards.map(dc=>`
+      <div class="day-accordion">
+        <button type="button" class="day-accordion-header" onclick="togglePlateauDayAccordion(${dc.dayIndex})">
+          <span>${dc.dayName}</span>
+          <span class="chevron${dc.isToday ? ' open' : ''}" id="pl-day-chevron-${dc.dayIndex}">›</span>
+        </button>
+        <div class="day-accordion-content" id="pl-day-content-${dc.dayIndex}" style="display:${dc.isToday ? 'block' : 'none'};">
+          ${dc.dayPlateaux.length ? dc.dayPlateaux.map(p=>`
+            <div class="plateau-row" style="cursor:pointer;border-left:4px solid ${typeColorVar(p.type)};" onclick="openPlateauDetail(${p.id})">
+              <div style="display:flex;justify-content:space-between;gap:8px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="plateau-row-name">${escapeHtml(p.name)}</div>
+                  ${plateauCompactMeta(p)}
+                </div>
+                ${plateauActionsHtml(p)}
+              </div>
+            </div>
+          `).join('') : `<div class="empty" style="padding:10px 0;">Rien de prévu ce jour-là.</div>`}
+        </div>
+      </div>
+    `).join('') + (incomplete.length ? `
+      <div class="day-accordion">
+        <button type="button" class="day-accordion-header" onclick="togglePlateauDayAccordion('incomplete')">
+          <span>Infos à compléter</span>
+          <span class="chevron" id="pl-day-chevron-incomplete">›</span>
+        </button>
+        <div class="day-accordion-content" id="pl-day-content-incomplete" style="display:none;">
+          ${incomplete.map(renderCard).join('')}
+        </div>
+      </div>
+    ` : '');
+  }
+
+  // --- Tous les plateaux : groupés par jour (lundi en premier) ---
+  const listWrap = document.getElementById('plateaux-list');
+  if(!plateaux.length){
+    listWrap.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  html += DAY_ORDER_MON_FIRST.map(dow=>{
+    const dayPlateaux = sortPlateauxByTime(plateaux.filter(p=>isPlateauComplete(p) && p.days && p.days.includes(dow)));
+    if(!dayPlateaux.length) return '';
+    return `
+      <div class="day-accordion">
+        <button type="button" class="day-accordion-header" onclick="toggleAllPlateauxDayAccordion(${dow})">
+          <span>${DAY_NAMES_FR[dow]}</span>
+          <span class="chevron open" id="pl-all-day-chevron-${dow}">›</span>
+        </button>
+        <div class="day-accordion-content" id="pl-all-day-content-${dow}" style="display:block;">
+          ${dayPlateaux.map(renderCard).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  listWrap.innerHTML = html;
+}
+
+function toggleAllPlateauxDayAccordion(dow){
+  const content = document.getElementById('pl-all-day-content-'+dow);
+  const chevron = document.getElementById('pl-all-day-chevron-'+dow);
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? 'block' : 'none';
+  if(chevron) chevron.classList.toggle('open', isHidden);
+}
+
+/* ---------- Détail / édition d'un plateau ---------- */
+function openPlateauDetail(id){
+  const p = loadPlateaux().find(x=>x.id===id);
+  if(!p) return;
+  currentPlateauId = id;
+
+  document.getElementById('plateaux-list-view').style.display = 'none';
+  document.getElementById('plateaux-detail-view').style.display = 'block';
+  document.getElementById('plateau-view-mode').style.display = 'block';
+  document.getElementById('plateau-edit-mode').style.display = 'none';
+
+  renderPlateauViewInfo(p);
+
+  document.getElementById('ple-name').value = p.name;
+  document.getElementById('ple-city').value = p.city || 'Paris';
+  document.getElementById('ple-freq').value = p.interval || 1;
+  document.getElementById('ple-anchor').value = p.anchorDate || '';
+  document.getElementById('ple-time').value = p.time || '';
+  document.getElementById('ple-address').value = p.address || '';
+  document.getElementById('ple-instagram').value = p.instagram || '';
+
+  editSelectedDays = new Set(p.days || []);
+  document.querySelectorAll('#ple-days-row .day-chip').forEach(b=>{
+    b.classList.toggle('selected', editSelectedDays.has(parseInt(b.dataset.day,10)));
+  });
+  editSelectedType = (p.type === undefined) ? null : p.type;
+  document.querySelectorAll('#ple-type-row .score-btn').forEach(b=>{
+    b.classList.toggle('selected', parseInt(b.dataset.v,10) === editSelectedType);
+  });
+  toggleEditAnchorField();
+
+  renderPlateauHistory(p.name);
+  renderPlateauThemes(p.name);
+}
+
+function renderPlateauViewInfo(p){
+  const wrap = document.getElementById('plateau-view-info');
+  const daysLabel = (p.days && p.days.length)
+    ? DAY_ORDER_MON_FIRST.filter(d=>p.days.includes(d)).map(d=>DAY_NAMES_FR[d]).join(', ')
+    : null;
+  const playCount = getPlateauPlayCount(p.name);
+  const typeBadge = typeLabelText(p.type);
+
+  wrap.innerHTML = `
+    <div class="stat-card" style="border-left:4px solid ${typeColorVar(p.type)};">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div class="big-num" style="font-size:19px;">${escapeHtml(p.name)}</div>
+          ${daysLabel ? `<div class="plateau-row-meta" style="margin-top:8px;">${daysLabel} · ${plateauFreqLabel(p.interval || 1)}</div>` : `<div class="plateau-row-meta" style="margin-top:8px;">Jour non renseigné</div>`}
+          ${p.time ? `<div class="plateau-row-meta">${escapeHtml(formatPlateauTime(p.time))}</div>` : ''}
+          ${p.address ? `<div class="plateau-row-meta">${escapeHtml(p.address)}</div>` : ''}
+          <div class="plateau-row-meta" style="margin-top:6px;font-weight:700;color:var(--accent);">Joué ${playCount} fois</div>
+        </div>
+        ${plateauActionsHtml(p)}
+      </div>
+      ${typeBadge ? `<div style="margin-top:8px;"><span class="type-badge" style="background:${typeColorVar(p.type)};">${typeBadge}</span></div>` : ''}
+    </div>
+  `;
+}
+
+function enterPlateauEditMode(){
+  document.getElementById('plateau-view-mode').style.display = 'none';
+  document.getElementById('plateau-edit-mode').style.display = 'block';
+}
+
+function cancelPlateauEdit(){
+  document.getElementById('plateau-edit-mode').style.display = 'none';
+  document.getElementById('plateau-view-mode').style.display = 'block';
+}
+
+function closePlateauDetail(){
+  currentPlateauId = null;
+  document.getElementById('plateaux-detail-view').style.display = 'none';
+  document.getElementById('plateaux-list-view').style.display = 'block';
+  renderPlateauxView();
+}
+
+function saveEditedPlateau(){
+  const name = document.getElementById('ple-name').value.trim();
+  if(!name){ showToast('Renseigne au moins un nom'); return; }
+
+  const interval = parseInt(document.getElementById('ple-freq').value, 10);
+  const anchorDate = document.getElementById('ple-anchor').value || null;
+  if(editSelectedDays.size && interval > 1 && !anchorDate){
+    showToast('Renseigne une date de référence pour cette fréquence');
+    return;
+  }
+
+  const list = loadPlateaux();
+  const idx = list.findIndex(p=>p.id===currentPlateauId);
+  if(idx < 0) return;
+
+  list[idx] = {
+    ...list[idx],
+    name,
+    city: document.getElementById('ple-city').value.trim() || 'Paris',
+    days: [...editSelectedDays],
+    interval,
+    anchorDate,
+    time: document.getElementById('ple-time').value.trim(),
+    type: editSelectedType,
+    address: document.getElementById('ple-address').value.trim(),
+    instagram: document.getElementById('ple-instagram').value.trim()
+  };
+  savePlateaux(list);
+  showToast('Modifications enregistrées ✓');
+
+  cancelPlateauEdit();
+  renderPlateauViewInfo(list[idx]);
+  renderPlateauHistory(list[idx].name);
+  renderPlateauThemes(list[idx].name);
+}
+
+function deletePlateauFromDetail(){
+  if(currentPlateauId === null) return;
+  deletePlateau(currentPlateauId);
+  closePlateauDetail();
+}
+
+// Historique : les scènes notées sous ce nom de plateau (recherche par nom exact)
+function renderPlateauHistory(plateauName){
+  const wrap = document.getElementById('plateau-history');
+  const scenes = loadScenes().filter(s => s.nom === plateauName).sort((a,b)=> b.date.localeCompare(a.date));
+  if(!scenes.length){
+    wrap.innerHTML = `<div class="empty">Pas encore joué ici (ou nom différent dans "Noter").</div>`;
+    return;
+  }
+  const avg = (scenes.reduce((a,s)=>a+(s.total||0),0) / scenes.length).toFixed(1);
+  wrap.innerHTML = `
+    <div class="stat-card" style="text-align:center;margin-bottom:8px;">
+      <div class="big-num">${scenes.length}</div>
+      <div class="label">Session(s) jouée(s) · moyenne ${avg}/20</div>
+    </div>
+    ${scenes.map(s=>`
+      <div class="session-item">
+        <div class="sdate">${formatDate(s.date)}</div>
+        <div class="sres"><span class="ok">${s.total||0}/20</span></div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// Thèmes abordés : textes dont au moins une session est liée à ce plateau
+function renderPlateauThemes(plateauName){
+  const wrap = document.getElementById('plateau-themes');
+  const texts = loadTexts();
+  const rows = [];
+  texts.forEach(t=>{
+    const here = (t.sessions||[]).filter(s=>s.plateau === plateauName);
+    if(here.length){
+      const validated = here.reduce((a,s)=>a+(s.validated||0),0);
+      rows.push({name: t.name, count: here.length, validated});
+    }
+  });
+  if(!rows.length){
+    wrap.innerHTML = `<div class="empty">Aucun sujet encore relié à ce plateau.</div>`;
+    return;
+  }
+  rows.sort((a,b)=>b.count-a.count);
+  wrap.innerHTML = rows.map(r=>`
+    <div class="rotation-status-row">
+      <div class="rotation-status-top">
+        <span class="rotation-status-name">${escapeHtml(r.name)}</span>
+        <span class="rotation-status-count">${r.count} fois</span>
+      </div>
+      <div class="rotation-status-meta">${r.validated} validée(s) ici</div>
+    </div>
+  `).join('');
+}
+
+
+
 /* ---------- Notation form ---------- */
 function buildCriteriaForm(){
   const wrap = document.getElementById('criteria-list');
@@ -1482,6 +2526,53 @@ function setScore(key, val, btn){
   updateLiveScore();
 }
 
+// Quand le nom du plateau correspond à un plateau connu dans Agenda (qui a un
+// type renseigné), préremplit automatiquement le critère "Type de plateau".
+// Applique le type d'un plateau précis (par id) au critère "Type de plateau"
+function applySlotType(slot){
+  if(!slot || slot.type === null || slot.type === undefined) return;
+  const row = document.querySelector('.score-row[data-key="type_plateau"]');
+  if(!row) return;
+  currentAnswers['type_plateau'] = slot.type;
+  row.querySelectorAll('.score-btn').forEach(b=>{
+    b.classList.toggle('selected', parseInt(b.dataset.v,10) === slot.type);
+  });
+  updateLiveScore();
+}
+
+function selectPlateauTimeSlotByIndex(i, btn){
+  document.querySelectorAll('#plateau-timeslot-chips .day-chip').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const slot = window._plateauSlotsCache && window._plateauSlotsCache[i];
+  applySlotType(slot);
+}
+
+// Quand le nom du plateau correspond à une fiche connue dans Agenda : si elle
+// n'a qu'une seule séance, préremplit directement le type ; si elle en a
+// plusieurs (plusieurs horaires), propose de choisir laquelle avant de préremplir.
+function prefillTypeFromAgenda(){
+  const name = document.getElementById('f-nom').value.trim();
+  const row = document.getElementById('plateau-timeslot-row');
+  const chipsWrap = document.getElementById('plateau-timeslot-chips');
+
+  if(!name){ row.style.display = 'none'; return; }
+
+  const matchingPlateaux = loadPlateaux().filter(p => p.name.toLowerCase() === name.toLowerCase());
+  const slots = matchingPlateaux.map(p => ({time: p.time, type: p.type}));
+
+  if(slots.length <= 1){
+    row.style.display = 'none';
+    if(slots.length === 1) applySlotType(slots[0]);
+    return;
+  }
+
+  row.style.display = 'block';
+  window._plateauSlotsCache = slots;
+  chipsWrap.innerHTML = slots.map((s,i)=>`
+    <button type="button" class="day-chip" onclick="selectPlateauTimeSlotByIndex(${i}, this)">${escapeHtml(formatPlateauTime(s.time) || 'Sans heure')}</button>
+  `).join('');
+}
+
 function updateLiveScore(){
   const total = Object.values(currentAnswers).reduce((a,b)=>a+b,0);
   document.getElementById('score-live').textContent = total;
@@ -1492,7 +2583,9 @@ function updateLiveScore(){
 }
 
 function populatePlateauNames(){
-  const names = [...new Set(loadScenes().map(s => s.nom).filter(Boolean))];
+  const fromScenes = loadScenes().map(s => s.nom).filter(Boolean);
+  const fromAgenda = loadPlateaux().map(p => p.name).filter(Boolean);
+  const names = [...new Set([...fromAgenda, ...fromScenes])];
   const dl = document.getElementById('plateau-names-list');
   dl.innerHTML = names.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
 }
@@ -1504,6 +2597,7 @@ function resetForm(){
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('f-gains').value = '';
   document.getElementById('f-depenses').value = '';
+  document.getElementById('plateau-timeslot-row').style.display = 'none';
   buildCriteriaForm();
   populatePlateauNames();
   populateSceneTextsList();
@@ -1606,6 +2700,28 @@ function saveScene(){
   const list = loadScenes();
   list.push(scene);
   saveScenes(list);
+
+  // Si ce nom de plateau n'existe pas encore dans Agenda, on le crée minimalement
+  // (juste le nom) pour qu'il apparaisse dans "À compléter".
+  if(nom){
+    const plateaux = loadPlateaux();
+    const exists = plateaux.some(p => p.name.toLowerCase() === nom.toLowerCase());
+    if(!exists){
+      plateaux.push({
+        id: Date.now()+1,
+        name: nom,
+        city: currentPlateauxCity || 'Paris',
+        days: [],
+        interval: 1,
+        anchorDate: null,
+        time: '',
+        type: null,
+        address: '',
+        instagram: ''
+      });
+      savePlateaux(plateaux);
+    }
+  }
 
   // Répercuter les sujets abordés dans l'onglet Tests
   const texts = loadTexts();
@@ -2663,6 +3779,31 @@ function renderHomeRating(){
   document.getElementById('rd-money-val').textContent = `${Math.round(r.gainsPerMonth)}/500€`;
 
   renderSpectacleCard();
+  renderHomeTodayPlateaux();
+}
+
+function renderHomeTodayPlateaux(){
+  const wrap = document.getElementById('home-today-plateaux');
+  if(!wrap) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayPlateaux = sortPlateauxByTime(loadPlateaux().filter(p => isPlateauComplete(p) && doesPlateauOccur(p, today)));
+
+  if(!todayPlateaux.length){ wrap.innerHTML = ''; return; }
+
+  wrap.innerHTML = `
+    <div class="section-label">Aujourd'hui</div>
+    ${todayPlateaux.map(p=>`
+      <div class="plateau-row" style="cursor:pointer;border-left:4px solid ${typeColorVar(p.type)};" onclick="goToPlateauFromHome(${p.id})">
+        <div class="plateau-row-name">${escapeHtml(p.name)}</div>
+        ${plateauCompactMeta(p)}
+      </div>
+    `).join('')}
+  `;
+}
+
+function goToPlateauFromHome(id){
+  goto('plateaux');
+  openPlateauDetail(id);
 }
 
 const SPECTACLE_TARGET = 400;
@@ -3602,6 +4743,7 @@ function initNumberGen(){
 
 /* ---------- init ---------- */
 document.getElementById('f-nom').addEventListener('input', updateLiveScore);
+document.getElementById('f-nom').addEventListener('input', prefillTypeFromAgenda);
 document.getElementById('f-date').addEventListener('change', updateLiveScore);
 resetForm();
 renderHomeRating();
