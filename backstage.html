@@ -676,6 +676,40 @@
     margin-right:6px;
     flex-shrink:0;
   }
+  .week-summary-card{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:10px;
+    text-align:center;
+  }
+  .week-stat{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    flex:1;
+    min-width:56px;
+  }
+  .week-stat .big-num{
+    font-size:19px;
+  }
+  .week-stat .label{
+    font-size:9.5px;
+  }
+  .quality-pill{
+    width:22px;
+    height:16px;
+    border-radius:5px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    font-weight:800;
+    color:#0E1A11;
+    margin-bottom:2px;
+  }
   .type-badge{
     flex-shrink:0;
     font-size:10px;
@@ -1611,6 +1645,13 @@
         <div id="plateaux-list-wrap" style="display:none;">
           <div id="plateaux-list" style="margin-top:8px;"></div>
         </div>
+
+        <div class="section-label clickable" style="margin-top:26px;" onclick="toggleCollapse('plateaux-paused-wrap')">
+          À l'arrêt <span class="chevron" id="chevron-plateaux-paused-wrap">›</span>
+        </div>
+        <div id="plateaux-paused-wrap" style="display:none;">
+          <div id="plateaux-paused-list" style="margin-top:8px;"></div>
+        </div>
       </div>
 
       <!-- Sous-vue détail d'un plateau -->
@@ -1621,6 +1662,7 @@
         <div id="plateau-view-mode">
           <div id="plateau-view-info"></div>
           <button class="save-btn" style="width:100%;margin-top:14px;" onclick="enterPlateauEditMode()">Modifier</button>
+          <button class="backlink" style="width:100%;text-align:center;" onclick="openPausePlateauModal(currentPlateauId)">⏸ Mettre à l'arrêt</button>
           <button class="delete-link-btn" onclick="deletePlateauFromDetail()">Supprimer ce plateau</button>
         </div>
 
@@ -1788,6 +1830,15 @@
     </div>
   </div>
 
+  <div id="pause-plateau-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closePausePlateauModal()">
+    <div class="modal-card">
+      <div class="modal-title">Mettre à l'arrêt</div>
+      <div id="pause-plateau-options"></div>
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmPausePlateau()">Confirmer</button>
+      <button class="modal-close" onclick="closePausePlateauModal()">Annuler</button>
+    </div>
+  </div>
+
   <div id="quickadd-plateau-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeQuickAddPlateauModal()">
     <div class="modal-card">
       <input type="text" id="quickadd-plateau-input" placeholder="Nom du plateau" style="width:100%;text-align:center;font-size:16px;font-weight:700;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
@@ -1909,33 +1960,27 @@ function loadPlateaux(){
     if(p.notes !== undefined){ delete p.notes; needsSave = true; }
     if(p.city === undefined){ p.city = 'Paris'; needsSave = true; }
 
-    if(Array.isArray(p.times)){
+    expanded.push(p);
+  });
+
+  // Filet de sécurité : retire les doublons strictement identiques (même
+  // contenu à l'id près) qui auraient pu être créés par d'anciens bugs de
+  // migration.
+  const seen = new Set();
+  const deduped = [];
+  expanded.forEach(p=>{
+    const key = JSON.stringify({...p, id: undefined});
+    if(seen.has(key)){
       needsSave = true;
-      if(!p.times.length){
-        const clone = {...p};
-        delete clone.times;
-        clone.time = '';
-        clone.type = null;
-        expanded.push(clone);
-      } else {
-        p.times.forEach((t,i)=>{
-          const clone = {...p};
-          delete clone.times;
-          clone.id = p.id + i;
-          clone.time = t.time || '';
-          clone.type = (t.type === undefined) ? null : t.type;
-          expanded.push(clone);
-        });
-      }
     } else {
-      if(p.time === undefined){ p.time = ''; needsSave = true; }
-      if(p.type === undefined){ p.type = null; needsSave = true; }
-      expanded.push(p);
+      seen.add(key);
+      deduped.push(p);
     }
   });
-  if(needsSave) savePlateaux(expanded);
 
-  return expanded;
+  if(needsSave) savePlateaux(deduped);
+
+  return deduped;
 }
 function savePlateaux(list){
   localStorage.setItem(PLATEAUX_STORE_KEY, JSON.stringify(list));
@@ -2183,10 +2228,12 @@ function removeEditException(i){
 //   l'exception existe ce jour-là (remplacement / jour à part)
 // - sinon, la séance normale du plateau (si le jour y est coché)
 function getSlotsForDay(p, dow){
+  if(p.paused) return [];
   const slots = [];
   const inMainDays = !!(p.days && p.days.includes(dow));
   const matchingExceptions = (p.exceptions || []).filter(ex => ex.days && ex.days.includes(dow));
-  const baseTimes = (p.times && p.times.length) ? p.times : [{time: p.time, type: p.type}];
+  const allBaseTimes = (p.times && p.times.length) ? p.times : [{time: p.time, type: p.type}];
+  const baseTimes = allBaseTimes.filter(bt => !bt.paused);
 
   if(inMainDays){
     baseTimes.forEach(bt=>{
@@ -2207,7 +2254,9 @@ function getSlotsForDay(p, dow){
 // renvoie la première séance du jour, sans dupliquer.
 function getEffectiveSlot(p, dow){
   const slots = getSlotsForDay(p, dow);
-  return slots.length ? slots[0] : {time: p.time, type: p.type};
+  if(slots.length) return slots[0];
+  const bt = (p.times && p.times[0]) || {time:'', type:null};
+  return {time: bt.time, type: bt.type};
 }
 
 function setEditType(val, btn){
@@ -2340,7 +2389,7 @@ function sortPlateauxByTime(arr){
 
 // Heure et "Joué X fois" côte à côte, pour une carte plus compacte
 function plateauCompactMeta(p, slot){
-  slot = slot || {time: p.time, type: p.type};
+  slot = slot || ((p.times && p.times[0]) || {time:'', type:null});
   const parts = [];
   if(slot.time) parts.push(escapeHtml(formatPlateauTime(slot.time)));
   parts.push(`Joué ${getPlateauPlayCount(p.name)} fois`);
@@ -2385,35 +2434,10 @@ function formatIsoWithOffset(d){
 
 // Ouvre Citymapper avec la destination et, si une heure est renseignée, une
 // arrivée programmée 10 minutes avant.
-async function openPlateauItineraire(id){
+function openPlateauItineraire(id){
   const p = loadPlateaux().find(x=>x.id===id);
   if(!p || !p.address) return;
-
-  let lat = p.lat, lng = p.lng;
-  if(lat === undefined || lng === undefined){
-    showToast('Recherche de l\'adresse...');
-    const geo = await geocodeAddress(p.address);
-    if(!geo){
-      showToast("Adresse introuvable, ouverture sans point précis");
-      window.open('https://citymapper.com/directions?endname=' + encodeURIComponent(p.name) + '&endaddress=' + encodeURIComponent(p.address), '_blank');
-      return;
-    }
-    lat = geo.lat; lng = geo.lng;
-    const list = loadPlateaux();
-    const idx = list.findIndex(x=>x.id===id);
-    if(idx>=0){ list[idx].lat = lat; list[idx].lng = lng; savePlateaux(list); }
-  }
-
-  let url = `https://citymapper.com/directions?endcoord=${lat},${lng}&endname=${encodeURIComponent(p.name)}&endaddress=${encodeURIComponent(p.address)}`;
-  const todayDow = new Date().getDay();
-  const effectiveTime = getEffectiveSlot(p, todayDow).time;
-  const mins = parseTimeToMinutes(effectiveTime);
-  if(mins !== null){
-    const arriveMins = mins - 10;
-    const now = new Date();
-    const arrive = new Date(now.getFullYear(), now.getMonth(), now.getDate(), Math.floor(arriveMins/60), ((arriveMins%60)+60)%60, 0);
-    url += '&arrival_time=' + encodeURIComponent(formatIsoWithOffset(arrive));
-  }
+  const url = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(p.address) + '&travelmode=transit';
   window.open(url, '_blank');
 }
 
@@ -2484,11 +2508,12 @@ function plateauActionsHtml(p){
 }
 
 // Un plateau reste dans "À compléter" tant qu'il n'a pas de jour, de fréquence
-// ET d'horaire renseignés.
+// ET d'au moins une séance avec une heure renseignés.
 function isPlateauComplete(p){
+  const hasTime = !!(p.times && p.times.some(t => t.time && t.time.trim()));
   return !!(p.days && p.days.length
     && typeof p.interval === 'number' && p.interval > 0
-    && p.time && p.time.trim());
+    && hasTime);
 }
 
 function plateauFreqLabel(interval){
@@ -2514,10 +2539,11 @@ function togglePlateauDayAccordion(i){
 function renderPlateauxView(){
   toggleAnchorField();
   renderCityChips();
+  renderPausedPlateauxList();
   const plateaux = loadPlateaux().filter(p => (p.city || 'Paris') === currentPlateauxCity);
 
   const renderCard = (p, slot)=>{
-    slot = slot || {time: p.time, type: p.type};
+    slot = slot || ((p.times && p.times[0]) || {time:'', type:null});
     return `
     <div class="text-card" style="border-left:4px solid ${typeColorVar(slot.type)};" onclick="openPlateauDetail(${p.id})">
       <div style="display:flex;justify-content:space-between;gap:8px;">
@@ -2659,7 +2685,13 @@ function renderPlateauViewInfo(p){
     ? DAY_ORDER_MON_FIRST.filter(d=>p.days.includes(d)).map(d=>DAY_NAMES_FR[d]).join(', ')
     : null;
   const playCount = getPlateauPlayCount(p.name);
-  const typeBadge = typeLabelText(p.type);
+  const baseTimes = (p.times && p.times.length) ? p.times : [{time:'', type:null}];
+  const mainColor = typeColorVar(baseTimes[0].type);
+
+  const timesHtml = baseTimes.map(t=>{
+    const badge = typeLabelText(t.type);
+    return `<div class="plateau-row-meta">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}${badge ? ' · '+badge : ''}</div>`;
+  }).join('');
 
   const exceptionsHtml = (p.exceptions && p.exceptions.length) ? p.exceptions.map(ex=>{
     const exDaysLabel = EXCEPTION_DAY_ORDER.filter(d=>ex.days.includes(d)).map(d=>EXCEPTION_DAY_ABBR[d]).join(', ');
@@ -2670,19 +2702,18 @@ function renderPlateauViewInfo(p){
   }).join('') : '';
 
   wrap.innerHTML = `
-    <div class="stat-card" style="border-left:4px solid ${typeColorVar(p.type)};">
+    <div class="stat-card" style="border-left:4px solid ${mainColor};">
       <div style="display:flex;justify-content:space-between;gap:8px;">
         <div style="flex:1;min-width:0;">
           <div class="big-num" style="font-size:19px;">${escapeHtml(p.name)}</div>
           ${daysLabel ? `<div class="plateau-row-meta" style="margin-top:8px;">${daysLabel} · ${plateauFreqLabel(p.interval || 1)}</div>` : `<div class="plateau-row-meta" style="margin-top:8px;">Jour non renseigné</div>`}
-          ${p.time ? `<div class="plateau-row-meta">${escapeHtml(formatPlateauTime(p.time))}</div>` : ''}
+          ${timesHtml}
           ${exceptionsHtml}
           ${p.address ? `<div class="plateau-row-meta">${escapeHtml(p.address)}</div>` : ''}
           <div class="plateau-row-meta" style="margin-top:6px;font-weight:700;color:var(--accent);">Joué ${playCount} fois</div>
         </div>
         ${plateauActionsHtml(p)}
       </div>
-      ${typeBadge ? `<div style="margin-top:8px;"><span class="type-badge" style="background:${typeColorVar(p.type)};">${typeBadge}</span></div>` : ''}
     </div>
   `;
 }
@@ -2756,6 +2787,123 @@ function deletePlateauFromDetail(){
   if(currentPlateauId === null) return;
   deletePlateau(currentPlateauId);
   closePlateauDetail();
+}
+
+/* ---------- Mise à l'arrêt (tout le plateau, ou juste une séance) ---------- */
+let pausePlateauId = null;
+let pauseSelection = {whole: false, slotIndexes: new Set()};
+
+function openPausePlateauModal(id){
+  const p = loadPlateaux().find(x=>x.id===id);
+  if(!p) return;
+  pausePlateauId = id;
+  pauseSelection = {whole: false, slotIndexes: new Set()};
+
+  const baseTimes = p.times || [];
+  let html = `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:8px;" id="pause-whole-btn" onclick="togglePauseWhole()">Tout le plateau</button>`;
+  const activeTimes = baseTimes.filter(t=>!t.paused);
+  if(activeTimes.length){
+    html += `<div class="label" style="margin:8px 0 6px;">Ou juste une séance (sur tous les jours où elle a lieu, pas juste aujourd'hui) :</div>`;
+    baseTimes.forEach((t,i)=>{
+      if(t.paused) return;
+      html += `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:6px;" id="pause-slot-btn-${i}" onclick="togglePauseSlot(${i})">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}</button>`;
+    });
+  }
+  document.getElementById('pause-plateau-options').innerHTML = html;
+  document.getElementById('pause-plateau-modal-overlay').style.display = 'flex';
+}
+function togglePauseWhole(){
+  pauseSelection.whole = !pauseSelection.whole;
+  document.getElementById('pause-whole-btn').classList.toggle('selected', pauseSelection.whole);
+}
+function togglePauseSlot(i){
+  if(pauseSelection.slotIndexes.has(i)) pauseSelection.slotIndexes.delete(i);
+  else pauseSelection.slotIndexes.add(i);
+  document.getElementById('pause-slot-btn-'+i).classList.toggle('selected', pauseSelection.slotIndexes.has(i));
+}
+function closePausePlateauModal(){
+  document.getElementById('pause-plateau-modal-overlay').style.display = 'none';
+  pausePlateauId = null;
+}
+function confirmPausePlateau(){
+  if(pausePlateauId === null) return;
+  const list = loadPlateaux();
+  const idx = list.findIndex(x=>x.id===pausePlateauId);
+  if(idx < 0) return;
+
+  if(pauseSelection.whole){
+    list[idx].paused = true;
+  } else if(pauseSelection.slotIndexes.size){
+    pauseSelection.slotIndexes.forEach(i=>{
+      if(list[idx].times[i]) list[idx].times[i].paused = true;
+    });
+  } else {
+    showToast('Choisis au moins une option');
+    return;
+  }
+  savePlateaux(list);
+  closePausePlateauModal();
+  showToast("Mis à l'arrêt ✓");
+  closePlateauDetail();
+}
+
+// Réactive tout le plateau (sans argument) ou une séance précise (avec son index)
+function reactivatePlateau(id, slotIndex){
+  const list = loadPlateaux();
+  const idx = list.findIndex(x=>x.id===id);
+  if(idx < 0) return;
+  if(slotIndex === undefined){
+    delete list[idx].paused;
+    if(list[idx].times) list[idx].times.forEach(t=>delete t.paused);
+  } else if(list[idx].times && list[idx].times[slotIndex]){
+    delete list[idx].times[slotIndex].paused;
+  }
+  savePlateaux(list);
+  showToast('Relancé ✓');
+  renderPlateauxView();
+}
+
+function isPlateauPaused(p){
+  return !!(p.paused || (p.times && p.times.some(t=>t.paused)));
+}
+
+function renderPausedPlateauxList(){
+  const wrap = document.getElementById('plateaux-paused-list');
+  if(!wrap) return;
+  const paused = loadPlateaux().filter(p => (p.city || 'Paris') === currentPlateauxCity && isPlateauPaused(p));
+
+  if(!paused.length){
+    wrap.innerHTML = `<div class="empty">Aucun plateau à l'arrêt.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = paused.map(p=>{
+    if(p.paused){
+      return `
+        <div class="text-card">
+          <div class="text-card-top">
+            <div class="text-card-name">${escapeHtml(p.name)}</div>
+            <button class="pair-btn" onclick="reactivatePlateau(${p.id})">↩ Relancer</button>
+          </div>
+          <div class="plateau-row-meta">Tout le plateau est à l'arrêt</div>
+        </div>
+      `;
+    }
+    const pausedSlots = (p.times || []).map((t,i)=>({t,i})).filter(x=>x.t.paused);
+    return `
+      <div class="text-card">
+        <div class="text-card-top">
+          <div class="text-card-name">${escapeHtml(p.name)}</div>
+        </div>
+        ${pausedSlots.map(({t,i})=>`
+          <div class="plateau-row-meta" style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+            <span>${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')} à l'arrêt</span>
+            <button class="pair-btn" onclick="reactivatePlateau(${p.id}, ${i})">↩ Relancer</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
 }
 
 // Historique : les scènes notées sous ce nom de plateau (recherche par nom exact)
@@ -2871,7 +3019,8 @@ function prefillTypeFromAgenda(){
   if(!name){ row.style.display = 'none'; return; }
 
   const matchingPlateaux = loadPlateaux().filter(p => p.name.toLowerCase() === name.toLowerCase());
-  const slots = matchingPlateaux.map(p => ({time: p.time, type: p.type}));
+  const slots = [];
+  matchingPlateaux.forEach(p => (p.times && p.times.length ? p.times : [{time:'',type:null}]).forEach(t => slots.push({time: t.time, type: t.type})));
 
   if(slots.length <= 1){
     row.style.display = 'none';
@@ -3758,9 +3907,46 @@ function renderHistory(list){
   });
 }
 
+// Nettoie les sessions de textes qui ne correspondent plus à aucune scène
+// existante (par ex. une scène supprimée avant que la suppression en cascade
+// n'existe). Ne touche jamais aux ajustements manuels, ni aux sessions sans
+// nom de plateau (rien à vérifier dans ce cas).
+function cleanupOrphanedSessions(){
+  const scenes = loadScenes();
+  const sceneKeys = new Set(scenes.map(s => (s.nom||'') + '|' + s.date));
+  const texts = loadTexts();
+  let changed = false;
+  texts.forEach(t=>{
+    const before = t.sessions.length;
+    t.sessions = t.sessions.filter(s=>{
+      if(s.manual) return true;
+      if(!s.plateau) return true;
+      return sceneKeys.has(s.plateau + '|' + s.date);
+    });
+    if(t.sessions.length !== before) changed = true;
+  });
+  if(changed) saveTexts(texts);
+}
+
 function deleteScene(id){
-  const list = loadScenes().filter(s=>s.id!==id);
-  saveScenes(list);
+  const list = loadScenes();
+  const scene = list.find(s=>s.id===id);
+  const remaining = list.filter(s=>s.id!==id);
+  saveScenes(remaining);
+
+  // Retire aussi les sessions de textes liées à cette scène précise (même
+  // plateau, même date), sinon elles restent "fantômes" dans les stats.
+  if(scene && scene.nom){
+    const texts = loadTexts();
+    let changed = false;
+    texts.forEach(t=>{
+      const before = t.sessions.length;
+      t.sessions = t.sessions.filter(s => !(s.plateau === scene.nom && s.date === scene.date));
+      if(t.sessions.length !== before) changed = true;
+    });
+    if(changed) saveTexts(texts);
+  }
+
   renderStats();
   renderHomeRating();
 }
@@ -4107,10 +4293,13 @@ function renderHomeWeekSummary(){
   const scenes = loadScenes().filter(s => s.date >= weekAgoStr);
   const sceneCount = scenes.length;
   const netMoney = scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0);
+  const {belles, sympas, nulles} = computeTypeCounts(scenes);
 
+  // Les ajustements manuels (rattrapage de blagues déjà validées avant l'app)
+  // ne représentent pas de vraies sessions cette semaine — on les exclut.
   let tested = 0, validated = 0;
   loadTexts().forEach(t => (t.sessions||[]).forEach(s=>{
-    if(s.date >= weekAgoStr){
+    if(!s.manual && s.date >= weekAgoStr){
       tested += (s.tested||0);
       validated += (s.validated||0);
     }
@@ -4122,11 +4311,18 @@ function renderHomeWeekSummary(){
   }
 
   const sign = netMoney >= 0 ? '+' : '';
+  const moneyColor = netMoney >= 0 ? 'var(--s2)' : 'var(--s0)';
   wrap.innerHTML = `
     <div class="section-label">Cette semaine</div>
-    <div class="stat-card">
-      <div class="plateau-row-meta" style="font-size:13px;color:var(--text);">
-        ${sceneCount} scène(s) · ${tested} testée(s) · ${validated} validée(s) · ${sign}${Math.round(netMoney)}€
+    <div class="stat-card week-summary-card">
+      <div class="week-stat"><span class="big-num">${sceneCount}</span><span class="label">scène(s)</span></div>
+      <div class="week-stat"><span class="big-num" style="color:${moneyColor};">${sign}${Math.round(netMoney)}€</span><span class="label">bénéfice</span></div>
+      <div class="week-stat"><span class="big-num">${tested}</span><span class="label">testée(s)</span></div>
+      <div class="week-stat"><span class="big-num">${validated}</span><span class="label">validée(s)</span></div>
+      <div class="week-stat">
+        <div class="quality-pill" style="background:var(--s0);">${nulles}</div>
+        <div class="quality-pill" style="background:var(--s1);">${sympas}</div>
+        <div class="quality-pill" style="background:var(--s2);">${belles}</div>
       </div>
     </div>
   `;
@@ -4172,13 +4368,20 @@ function computeSpectacleEstimate(){
   const totalValidated = allSessions.reduce((a,s)=>a+(s.validated||0),0);
   const remaining = Math.max(0, SPECTACLE_TARGET - totalValidated);
 
+  // Le rythme (blagues validées par jour) ne doit compter que les vraies
+  // sessions de test — un ajustement manuel (rattrapage de blagues déjà
+  // validées avant l'app) fait avancer le total mais ne reflète pas un
+  // vrai rythme de travail, et fausserait la projection de date.
+  const realSessions = allSessions.filter(s => !s.manual);
+  const realValidated = realSessions.reduce((a,s)=>a+(s.validated||0),0);
+
   const now = new Date();
   let ratePerDay = 0;
-  if(allSessions.length){
-    const dates = allSessions.filter(s=>s.date).map(s=>new Date(s.date)).sort((a,b)=>a-b);
+  if(realSessions.length){
+    const dates = realSessions.filter(s=>s.date).map(s=>new Date(s.date)).sort((a,b)=>a-b);
     const firstDate = dates[0];
     const daysSinceStart = Math.max(1, Math.round((now - firstDate) / (1000*60*60*24)));
-    ratePerDay = totalValidated / daysSinceStart;
+    ratePerDay = realValidated / daysSinceStart;
   }
 
   let projectedDate = null;
@@ -5098,6 +5301,7 @@ function initNumberGen(){
 }
 
 /* ---------- init ---------- */
+cleanupOrphanedSessions();
 document.getElementById('f-nom').addEventListener('input', updateLiveScore);
 document.getElementById('f-nom').addEventListener('input', prefillTypeFromAgenda);
 document.getElementById('f-date').addEventListener('change', updateLiveScore);

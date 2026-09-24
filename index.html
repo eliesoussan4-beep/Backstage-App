@@ -688,6 +688,40 @@
     margin-right:6px;
     flex-shrink:0;
   }
+  .week-summary-card{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:10px;
+    text-align:center;
+  }
+  .week-stat{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    flex:1;
+    min-width:56px;
+  }
+  .week-stat .big-num{
+    font-size:19px;
+  }
+  .week-stat .label{
+    font-size:9.5px;
+  }
+  .quality-pill{
+    width:22px;
+    height:16px;
+    border-radius:5px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    font-weight:800;
+    color:#0E1A11;
+    margin-bottom:2px;
+  }
   .type-badge{
     flex-shrink:0;
     font-size:10px;
@@ -1581,9 +1615,16 @@
           </div>
 
           <div class="field">
-            <label>Séances (une carte sera créée par séance, avec ses propres exceptions)</label>
+            <label>Séances (partagent les mêmes jours ci-dessus)</label>
             <div id="pl-times-list" style="margin-top:6px;"></div>
             <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addPlTimeRow()">+ Ajouter une séance</button>
+          </div>
+
+          <div class="field">
+            <label>Jours avec un horaire différent (optionnel)</label>
+            <div id="pl-exceptions-list" style="margin-top:6px;"></div>
+            <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addPlException()">+ Ajouter une exception</button>
+            <div class="label" style="margin-top:6px;">Coche aussi le jour dans "Jour(s)" ci-dessus si c'est une séance en plus ce jour-là ; laisse-le décoché si ça remplace les séances normales ce jour-là.</div>
           </div>
 
           <div class="field">
@@ -1616,6 +1657,13 @@
         <div id="plateaux-list-wrap" style="display:none;">
           <div id="plateaux-list" style="margin-top:8px;"></div>
         </div>
+
+        <div class="section-label clickable" style="margin-top:26px;" onclick="toggleCollapse('plateaux-paused-wrap')">
+          À l'arrêt <span class="chevron" id="chevron-plateaux-paused-wrap">›</span>
+        </div>
+        <div id="plateaux-paused-wrap" style="display:none;">
+          <div id="plateaux-paused-list" style="margin-top:8px;"></div>
+        </div>
       </div>
 
       <!-- Sous-vue détail d'un plateau -->
@@ -1626,6 +1674,7 @@
         <div id="plateau-view-mode">
           <div id="plateau-view-info"></div>
           <button class="save-btn" style="width:100%;margin-top:14px;" onclick="enterPlateauEditMode()">Modifier</button>
+          <button class="backlink" style="width:100%;text-align:center;" onclick="openPausePlateauModal(currentPlateauId)">⏸ Mettre à l'arrêt</button>
           <button class="delete-link-btn" onclick="deletePlateauFromDetail()">Supprimer ce plateau</button>
         </div>
 
@@ -1667,26 +1716,17 @@
             <input type="date" id="ple-anchor">
           </div>
 
-          <div class="field" style="display:flex;gap:10px;">
-            <div style="flex:1;">
-              <label for="ple-time">Heure</label>
-              <input type="text" id="ple-time" placeholder="Ex : 20h30">
-            </div>
-          </div>
           <div class="field">
-            <label>Type de plateau</label>
-            <div class="score-row" style="margin-top:6px;" id="ple-type-row">
-              <button type="button" class="score-btn" data-v="0" onclick="setEditType(0, this)">0</button>
-              <button type="button" class="score-btn" data-v="1" onclick="setEditType(1, this)">1</button>
-              <button type="button" class="score-btn" data-v="2" onclick="setEditType(2, this)">2</button>
-            </div>
+            <label>Séances (partagent les mêmes jours ci-dessus)</label>
+            <div id="ple-times-list" style="margin-top:6px;"></div>
+            <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addEditTimeRow()">+ Ajouter une séance</button>
           </div>
 
           <div class="field">
             <label>Jours avec un horaire différent (optionnel)</label>
             <div id="ple-exceptions-list" style="margin-top:6px;"></div>
             <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addEditException()">+ Ajouter une exception</button>
-            <div class="label" style="margin-top:6px;">Coche aussi le jour dans "Jour(s)" ci-dessus si c'est une séance en plus (2 séances ce jour-là). Laisse-le décoché si ça remplace l'horaire normal ce jour-là.</div>
+            <div class="label" style="margin-top:6px;">Coche aussi le jour dans "Jour(s)" ci-dessus si c'est une séance en plus ce jour-là ; laisse-le décoché si ça remplace les séances normales ce jour-là.</div>
           </div>
 
           <div class="field">
@@ -1802,6 +1842,15 @@
     </div>
   </div>
 
+  <div id="pause-plateau-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closePausePlateauModal()">
+    <div class="modal-card">
+      <div class="modal-title">Mettre à l'arrêt</div>
+      <div id="pause-plateau-options"></div>
+      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmPausePlateau()">Confirmer</button>
+      <button class="modal-close" onclick="closePausePlateauModal()">Annuler</button>
+    </div>
+  </div>
+
   <div id="quickadd-plateau-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeQuickAddPlateauModal()">
     <div class="modal-card">
       <input type="text" id="quickadd-plateau-input" placeholder="Nom du plateau" style="width:100%;text-align:center;font-size:16px;font-weight:700;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
@@ -1875,8 +1924,9 @@ const DAY_ORDER_MON_FIRST = [1,2,3,4,5,6,0];
 
 let plSelectedDays = new Set();
 let plTimesDraft = [];
+let plExceptions = [];
 let editSelectedDays = new Set();
-let editSelectedType = null;
+let editTimesDraft = [];
 let editExceptions = [];
 let currentPlateauId = null;
 
@@ -1913,36 +1963,36 @@ function loadPlateaux(){
     }
     if(p.instagram === undefined){ p.instagram = ''; needsSave = true; }
     if(!Array.isArray(p.exceptions)){ p.exceptions = []; needsSave = true; }
+    if(!Array.isArray(p.times)){
+      p.times = [{time: p.time || '', type: (p.type===undefined?null:p.type)}];
+      delete p.time;
+      delete p.type;
+      needsSave = true;
+    }
     if(p.notes !== undefined){ delete p.notes; needsSave = true; }
     if(p.city === undefined){ p.city = 'Paris'; needsSave = true; }
 
-    if(Array.isArray(p.times)){
+    expanded.push(p);
+  });
+
+  // Filet de sécurité : retire les doublons strictement identiques (même
+  // contenu à l'id près) qui auraient pu être créés par d'anciens bugs de
+  // migration.
+  const seen = new Set();
+  const deduped = [];
+  expanded.forEach(p=>{
+    const key = JSON.stringify({...p, id: undefined});
+    if(seen.has(key)){
       needsSave = true;
-      if(!p.times.length){
-        const clone = {...p};
-        delete clone.times;
-        clone.time = '';
-        clone.type = null;
-        expanded.push(clone);
-      } else {
-        p.times.forEach((t,i)=>{
-          const clone = {...p};
-          delete clone.times;
-          clone.id = p.id + i;
-          clone.time = t.time || '';
-          clone.type = (t.type === undefined) ? null : t.type;
-          expanded.push(clone);
-        });
-      }
     } else {
-      if(p.time === undefined){ p.time = ''; needsSave = true; }
-      if(p.type === undefined){ p.type = null; needsSave = true; }
-      expanded.push(p);
+      seen.add(key);
+      deduped.push(p);
     }
   });
-  if(needsSave) savePlateaux(expanded);
 
-  return expanded;
+  if(needsSave) savePlateaux(deduped);
+
+  return deduped;
 }
 function savePlateaux(list){
   localStorage.setItem(PLATEAUX_STORE_KEY, JSON.stringify(list));
@@ -2044,24 +2094,16 @@ function toggleEditDay(day){
 function renderPlTimesRows(){
   const wrap = document.getElementById('pl-times-list');
   wrap.innerHTML = plTimesDraft.map((slot,i)=>`
-    <div class="time-slot-block">
-      <div class="time-slot-row">
-        <input type="text" placeholder="Ex : 20h30" value="${escapeHtml(slot.time)}" oninput="plTimesDraft[${i}].time=this.value">
-        <div class="score-row mini">
-          <button type="button" class="score-btn small${slot.type===0?' selected':''}" data-v="0" onclick="setPlTimeType(${i},0,this)">0</button>
-          <button type="button" class="score-btn small${slot.type===1?' selected':''}" data-v="1" onclick="setPlTimeType(${i},1,this)">1</button>
-          <button type="button" class="score-btn small${slot.type===2?' selected':''}" data-v="2" onclick="setPlTimeType(${i},2,this)">2</button>
-        </div>
-        ${plTimesDraft.length>1 ? `<button type="button" class="icon-trash-btn small" onclick="removePlTimeRow(${i})">✕</button>` : ''}
+    <div class="time-slot-row">
+      <input type="text" placeholder="Ex : 20h30" value="${escapeHtml(slot.time)}" oninput="plTimesDraft[${i}].time=this.value">
+      <div class="score-row mini">
+        <button type="button" class="score-btn small${slot.type===0?' selected':''}" data-v="0" onclick="setPlTimeType(${i},0,this)">0</button>
+        <button type="button" class="score-btn small${slot.type===1?' selected':''}" data-v="1" onclick="setPlTimeType(${i},1,this)">1</button>
+        <button type="button" class="score-btn small${slot.type===2?' selected':''}" data-v="2" onclick="setPlTimeType(${i},2,this)">2</button>
       </div>
-      <div class="slot-exceptions-sub">
-        <div id="pl-exceptions-list-${i}"></div>
-        <button type="button" class="backlink" style="padding:6px 0 0;font-size:11.5px;" onclick="addPlExceptionToSlot(${i})">+ Jour avec un horaire différent pour cette séance</button>
-        <div class="label" style="margin-top:4px;">Coche aussi le jour dans "Jour(s)" ci-dessus si c'est une séance en plus ce jour-là ; laisse-le décoché si ça la remplace.</div>
-      </div>
+      ${plTimesDraft.length>1 ? `<button type="button" class="icon-trash-btn small" onclick="removePlTimeRow(${i})">✕</button>` : ''}
     </div>
   `).join('');
-  plTimesDraft.forEach((slot,i)=>renderPlExceptionsForSlot(i));
 }
 function setPlTimeType(i, val, btn){
   plTimesDraft[i].type = val;
@@ -2069,7 +2111,7 @@ function setPlTimeType(i, val, btn){
   btn.classList.add('selected');
 }
 function addPlTimeRow(){
-  plTimesDraft.push({time:'', type:null, exceptions:[]});
+  plTimesDraft.push({time:'', type:null});
   renderPlTimesRows();
 }
 function removePlTimeRow(i){
@@ -2077,53 +2119,77 @@ function removePlTimeRow(i){
   renderPlTimesRows();
 }
 
-// --- Exceptions imbriquées dans chaque séance du formulaire d'ajout ---
-function renderPlExceptionsForSlot(i){
-  const wrap = document.getElementById('pl-exceptions-list-'+i);
-  if(!wrap) return;
-  const exceptions = plTimesDraft[i].exceptions || [];
-  wrap.innerHTML = exceptions.map((ex,j)=>`
+// --- Exceptions globales (indépendantes des séances) — formulaire d'ajout ---
+function renderPlExceptions(){
+  const wrap = document.getElementById('pl-exceptions-list');
+  wrap.innerHTML = plExceptions.map((ex,i)=>`
     <div class="exception-block">
       <div class="day-chip-row">
         ${EXCEPTION_DAY_ORDER.map(d=>`
-          <button type="button" class="day-chip${ex.days.includes(d)?' selected':''}" onclick="togglePlSlotExceptionDay(${i},${j},${d})">${EXCEPTION_DAY_ABBR[d]}</button>
+          <button type="button" class="day-chip${ex.days.includes(d)?' selected':''}" onclick="togglePlExceptionDay(${i},${d})">${EXCEPTION_DAY_ABBR[d]}</button>
         `).join('')}
       </div>
       <div class="time-slot-row" style="margin-top:8px;">
-        <input type="text" placeholder="Ex : 17h" value="${escapeHtml(ex.time)}" oninput="plTimesDraft[${i}].exceptions[${j}].time=this.value">
+        <input type="text" placeholder="Ex : 17h" value="${escapeHtml(ex.time)}" oninput="plExceptions[${i}].time=this.value">
         <div class="score-row mini">
-          <button type="button" class="score-btn small${ex.type===0?' selected':''}" data-v="0" onclick="setPlSlotExceptionType(${i},${j},0,this)">0</button>
-          <button type="button" class="score-btn small${ex.type===1?' selected':''}" data-v="1" onclick="setPlSlotExceptionType(${i},${j},1,this)">1</button>
-          <button type="button" class="score-btn small${ex.type===2?' selected':''}" data-v="2" onclick="setPlSlotExceptionType(${i},${j},2,this)">2</button>
+          <button type="button" class="score-btn small${ex.type===0?' selected':''}" data-v="0" onclick="setPlExceptionType(${i},0,this)">0</button>
+          <button type="button" class="score-btn small${ex.type===1?' selected':''}" data-v="1" onclick="setPlExceptionType(${i},1,this)">1</button>
+          <button type="button" class="score-btn small${ex.type===2?' selected':''}" data-v="2" onclick="setPlExceptionType(${i},2,this)">2</button>
         </div>
-        <button type="button" class="icon-trash-btn small" onclick="removePlSlotException(${i},${j})">✕</button>
+        <button type="button" class="icon-trash-btn small" onclick="removePlException(${i})">✕</button>
       </div>
     </div>
   `).join('');
 }
-function togglePlSlotExceptionDay(i, j, d){
-  const arr = plTimesDraft[i].exceptions[j].days;
-  const idx = arr.indexOf(d);
-  if(idx>=0) arr.splice(idx,1);
-  else arr.push(d);
-  renderPlExceptionsForSlot(i);
+function togglePlExceptionDay(i, d){
+  const idx = plExceptions[i].days.indexOf(d);
+  if(idx>=0) plExceptions[i].days.splice(idx,1);
+  else plExceptions[i].days.push(d);
+  renderPlExceptions();
 }
-function setPlSlotExceptionType(i, j, val, btn){
-  plTimesDraft[i].exceptions[j].type = val;
+function setPlExceptionType(i, val, btn){
+  plExceptions[i].type = val;
   btn.parentElement.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
 }
-function addPlExceptionToSlot(i){
-  if(!plTimesDraft[i].exceptions) plTimesDraft[i].exceptions = [];
-  plTimesDraft[i].exceptions.push({days:[], time:'', type:null});
-  renderPlExceptionsForSlot(i);
+function addPlException(){
+  plExceptions.push({days:[], time:'', type:null});
+  renderPlExceptions();
 }
-function removePlSlotException(i, j){
-  plTimesDraft[i].exceptions.splice(j,1);
-  renderPlExceptionsForSlot(i);
+function removePlException(i){
+  plExceptions.splice(i,1);
+  renderPlExceptions();
 }
 
 // --- Même chose pour le formulaire d'édition ---
+function renderEditTimesRows(){
+  const wrap = document.getElementById('ple-times-list');
+  wrap.innerHTML = editTimesDraft.map((slot,i)=>`
+    <div class="time-slot-row">
+      <input type="text" placeholder="Ex : 20h30" value="${escapeHtml(slot.time)}" oninput="editTimesDraft[${i}].time=this.value">
+      <div class="score-row mini">
+        <button type="button" class="score-btn small${slot.type===0?' selected':''}" data-v="0" onclick="setEditTimeType(${i},0,this)">0</button>
+        <button type="button" class="score-btn small${slot.type===1?' selected':''}" data-v="1" onclick="setEditTimeType(${i},1,this)">1</button>
+        <button type="button" class="score-btn small${slot.type===2?' selected':''}" data-v="2" onclick="setEditTimeType(${i},2,this)">2</button>
+      </div>
+      ${editTimesDraft.length>1 ? `<button type="button" class="icon-trash-btn small" onclick="removeEditTimeRow(${i})">✕</button>` : ''}
+    </div>
+  `).join('');
+}
+function setEditTimeType(i, val, btn){
+  editTimesDraft[i].type = val;
+  btn.parentElement.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function addEditTimeRow(){
+  editTimesDraft.push({time:'', type:null});
+  renderEditTimesRows();
+}
+function removeEditTimeRow(i){
+  editTimesDraft.splice(i,1);
+  renderEditTimesRows();
+}
+
 function renderEditExceptions(){
   const wrap = document.getElementById('ple-exceptions-list');
   wrap.innerHTML = editExceptions.map((ex,i)=>`
@@ -2174,17 +2240,22 @@ function removeEditException(i){
 //   l'exception existe ce jour-là (remplacement / jour à part)
 // - sinon, la séance normale du plateau (si le jour y est coché)
 function getSlotsForDay(p, dow){
+  if(p.paused) return [];
   const slots = [];
   const inMainDays = !!(p.days && p.days.includes(dow));
   const matchingExceptions = (p.exceptions || []).filter(ex => ex.days && ex.days.includes(dow));
+  const allBaseTimes = (p.times && p.times.length) ? p.times : [{time: p.time, type: p.type}];
+  const baseTimes = allBaseTimes.filter(bt => !bt.paused);
 
   if(inMainDays){
-    slots.push({time: p.time, type: p.type});
+    baseTimes.forEach(bt=>{
+      slots.push({time: bt.time, type: bt.type});
+    });
   }
   matchingExceptions.forEach(ex=>{
     slots.push({
-      time: ex.time || p.time,
-      type: (ex.type !== null && ex.type !== undefined) ? ex.type : p.type
+      time: ex.time,
+      type: (ex.type !== null && ex.type !== undefined) ? ex.type : (baseTimes[0] ? baseTimes[0].type : null)
     });
   });
 
@@ -2195,7 +2266,9 @@ function getSlotsForDay(p, dow){
 // renvoie la première séance du jour, sans dupliquer.
 function getEffectiveSlot(p, dow){
   const slots = getSlotsForDay(p, dow);
-  return slots.length ? slots[0] : {time: p.time, type: p.type};
+  if(slots.length) return slots[0];
+  const bt = (p.times && p.times[0]) || {time:'', type:null};
+  return {time: bt.time, type: bt.type};
 }
 
 function setEditType(val, btn){
@@ -2222,7 +2295,8 @@ function findCachedGeocode(address){
 
 function resetPlateauForm(){
   plSelectedDays = new Set();
-  plTimesDraft = [{time:'', type:null, exceptions:[]}];
+  plTimesDraft = [{time:'', type:null}];
+  plExceptions = [];
   document.querySelectorAll('#pl-days-row .day-chip').forEach(b=>b.classList.remove('selected'));
   document.getElementById('pl-name').value = '';
   document.getElementById('pl-city').value = currentPlateauxCity;
@@ -2231,6 +2305,7 @@ function resetPlateauForm(){
   document.getElementById('pl-address').value = '';
   document.getElementById('pl-instagram').value = '';
   renderPlTimesRows();
+  renderPlExceptions();
   toggleAnchorField();
   populateAddressDatalists();
 }
@@ -2326,7 +2401,7 @@ function sortPlateauxByTime(arr){
 
 // Heure et "Joué X fois" côte à côte, pour une carte plus compacte
 function plateauCompactMeta(p, slot){
-  slot = slot || {time: p.time, type: p.type};
+  slot = slot || ((p.times && p.times[0]) || {time:'', type:null});
   const parts = [];
   if(slot.time) parts.push(escapeHtml(formatPlateauTime(slot.time)));
   parts.push(`Joué ${getPlateauPlayCount(p.name)} fois`);
@@ -2371,35 +2446,10 @@ function formatIsoWithOffset(d){
 
 // Ouvre Citymapper avec la destination et, si une heure est renseignée, une
 // arrivée programmée 10 minutes avant.
-async function openPlateauItineraire(id){
+function openPlateauItineraire(id){
   const p = loadPlateaux().find(x=>x.id===id);
   if(!p || !p.address) return;
-
-  let lat = p.lat, lng = p.lng;
-  if(lat === undefined || lng === undefined){
-    showToast('Recherche de l\'adresse...');
-    const geo = await geocodeAddress(p.address);
-    if(!geo){
-      showToast("Adresse introuvable, ouverture sans point précis");
-      window.open('https://citymapper.com/directions?endname=' + encodeURIComponent(p.name) + '&endaddress=' + encodeURIComponent(p.address), '_blank');
-      return;
-    }
-    lat = geo.lat; lng = geo.lng;
-    const list = loadPlateaux();
-    const idx = list.findIndex(x=>x.id===id);
-    if(idx>=0){ list[idx].lat = lat; list[idx].lng = lng; savePlateaux(list); }
-  }
-
-  let url = `https://citymapper.com/directions?endcoord=${lat},${lng}&endname=${encodeURIComponent(p.name)}&endaddress=${encodeURIComponent(p.address)}`;
-  const todayDow = new Date().getDay();
-  const effectiveTime = getEffectiveSlot(p, todayDow).time;
-  const mins = parseTimeToMinutes(effectiveTime);
-  if(mins !== null){
-    const arriveMins = mins - 10;
-    const now = new Date();
-    const arrive = new Date(now.getFullYear(), now.getMonth(), now.getDate(), Math.floor(arriveMins/60), ((arriveMins%60)+60)%60, 0);
-    url += '&arrival_time=' + encodeURIComponent(formatIsoWithOffset(arrive));
-  }
+  const url = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(p.address) + '&travelmode=transit';
   window.open(url, '_blank');
 }
 
@@ -2418,36 +2468,30 @@ function savePlateau(){
   const address = document.getElementById('pl-address').value.trim();
   const instagram = document.getElementById('pl-instagram').value.trim();
   const cachedGeo = address ? findCachedGeocode(address) : null;
-  const slots = plTimesDraft
-    .map(s=>({
-      time: s.time.trim(),
-      type: s.type,
-      exceptions: (s.exceptions || []).filter(ex => ex.days.length && (ex.time || ex.type !== null))
-    }))
-    .filter(s=>s.time || s.type !== null || s.exceptions.length);
+  const times = plTimesDraft
+    .map(s=>({time: s.time.trim(), type: s.type}))
+    .filter(s=>s.time || s.type !== null);
+  const exceptions = plExceptions.filter(ex => ex.days.length && (ex.time || ex.type !== null));
 
-  // Une fiche distincte par séance renseignée (au moins une, même vide, si rien
-  // n'a été précisé — pour permettre le "juste un nom pour l'instant"). Chaque
-  // fiche garde ses propres exceptions, indépendantes des autres séances.
-  const toCreate = slots.length ? slots : [{time:'', type:null, exceptions:[]}];
+  // Une seule fiche pour tout le plateau : ses séances de base (partageant les
+  // mêmes jours) et ses exceptions (jours à part) vivent ensemble dessus.
+  const finalTimes = times.length ? times : [{time:'', type:null}];
+
+  const entry = {
+    id: Date.now(),
+    name,
+    city,
+    days: [...plSelectedDays],
+    interval,
+    anchorDate,
+    times: finalTimes,
+    exceptions,
+    address, instagram
+  };
+  if(cachedGeo){ entry.lat = cachedGeo.lat; entry.lng = cachedGeo.lng; }
 
   const list = loadPlateaux();
-  toCreate.forEach((slot, i)=>{
-    const entry = {
-      id: Date.now() + i,
-      name,
-      city,
-      days: [...plSelectedDays],
-      interval,
-      anchorDate,
-      time: slot.time,
-      type: slot.type,
-      exceptions: slot.exceptions,
-      address, instagram
-    };
-    if(cachedGeo){ entry.lat = cachedGeo.lat; entry.lng = cachedGeo.lng; }
-    list.push(entry);
-  });
+  list.push(entry);
   savePlateaux(list);
 
   closeAddPlateauForm();
@@ -2476,11 +2520,12 @@ function plateauActionsHtml(p){
 }
 
 // Un plateau reste dans "À compléter" tant qu'il n'a pas de jour, de fréquence
-// ET d'horaire renseignés.
+// ET d'au moins une séance avec une heure renseignés.
 function isPlateauComplete(p){
+  const hasTime = !!(p.times && p.times.some(t => t.time && t.time.trim()));
   return !!(p.days && p.days.length
     && typeof p.interval === 'number' && p.interval > 0
-    && p.time && p.time.trim());
+    && hasTime);
 }
 
 function plateauFreqLabel(interval){
@@ -2506,10 +2551,11 @@ function togglePlateauDayAccordion(i){
 function renderPlateauxView(){
   toggleAnchorField();
   renderCityChips();
+  renderPausedPlateauxList();
   const plateaux = loadPlateaux().filter(p => (p.city || 'Paris') === currentPlateauxCity);
 
   const renderCard = (p, slot)=>{
-    slot = slot || {time: p.time, type: p.type};
+    slot = slot || ((p.times && p.times[0]) || {time:'', type:null});
     return `
     <div class="text-card" style="border-left:4px solid ${typeColorVar(slot.type)};" onclick="openPlateauDetail(${p.id})">
       <div style="display:flex;justify-content:space-between;gap:8px;">
@@ -2626,7 +2672,6 @@ function openPlateauDetail(id){
   document.getElementById('ple-city').value = p.city || 'Paris';
   document.getElementById('ple-freq').value = p.interval || 1;
   document.getElementById('ple-anchor').value = p.anchorDate || '';
-  document.getElementById('ple-time').value = p.time || '';
   document.getElementById('ple-address').value = p.address || '';
   document.getElementById('ple-instagram').value = p.instagram || '';
 
@@ -2634,10 +2679,9 @@ function openPlateauDetail(id){
   document.querySelectorAll('#ple-days-row .day-chip').forEach(b=>{
     b.classList.toggle('selected', editSelectedDays.has(parseInt(b.dataset.day,10)));
   });
-  editSelectedType = (p.type === undefined) ? null : p.type;
-  document.querySelectorAll('#ple-type-row .score-btn').forEach(b=>{
-    b.classList.toggle('selected', parseInt(b.dataset.v,10) === editSelectedType);
-  });
+  const baseTimes = (p.times && p.times.length) ? p.times : [{time: p.time||'', type: (p.type===undefined?null:p.type)}];
+  editTimesDraft = baseTimes.map(t=>({time: t.time||'', type: (t.type===undefined?null:t.type)}));
+  renderEditTimesRows();
   editExceptions = (p.exceptions || []).map(ex=>({days: [...(ex.days||[])], time: ex.time||'', type: (ex.type===undefined?null:ex.type)}));
   renderEditExceptions();
   toggleEditAnchorField();
@@ -2653,7 +2697,13 @@ function renderPlateauViewInfo(p){
     ? DAY_ORDER_MON_FIRST.filter(d=>p.days.includes(d)).map(d=>DAY_NAMES_FR[d]).join(', ')
     : null;
   const playCount = getPlateauPlayCount(p.name);
-  const typeBadge = typeLabelText(p.type);
+  const baseTimes = (p.times && p.times.length) ? p.times : [{time:'', type:null}];
+  const mainColor = typeColorVar(baseTimes[0].type);
+
+  const timesHtml = baseTimes.map(t=>{
+    const badge = typeLabelText(t.type);
+    return `<div class="plateau-row-meta">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}${badge ? ' · '+badge : ''}</div>`;
+  }).join('');
 
   const exceptionsHtml = (p.exceptions && p.exceptions.length) ? p.exceptions.map(ex=>{
     const exDaysLabel = EXCEPTION_DAY_ORDER.filter(d=>ex.days.includes(d)).map(d=>EXCEPTION_DAY_ABBR[d]).join(', ');
@@ -2664,19 +2714,18 @@ function renderPlateauViewInfo(p){
   }).join('') : '';
 
   wrap.innerHTML = `
-    <div class="stat-card" style="border-left:4px solid ${typeColorVar(p.type)};">
+    <div class="stat-card" style="border-left:4px solid ${mainColor};">
       <div style="display:flex;justify-content:space-between;gap:8px;">
         <div style="flex:1;min-width:0;">
           <div class="big-num" style="font-size:19px;">${escapeHtml(p.name)}</div>
           ${daysLabel ? `<div class="plateau-row-meta" style="margin-top:8px;">${daysLabel} · ${plateauFreqLabel(p.interval || 1)}</div>` : `<div class="plateau-row-meta" style="margin-top:8px;">Jour non renseigné</div>`}
-          ${p.time ? `<div class="plateau-row-meta">${escapeHtml(formatPlateauTime(p.time))}</div>` : ''}
+          ${timesHtml}
           ${exceptionsHtml}
           ${p.address ? `<div class="plateau-row-meta">${escapeHtml(p.address)}</div>` : ''}
           <div class="plateau-row-meta" style="margin-top:6px;font-weight:700;color:var(--accent);">Joué ${playCount} fois</div>
         </div>
         ${plateauActionsHtml(p)}
       </div>
-      ${typeBadge ? `<div style="margin-top:8px;"><span class="type-badge" style="background:${typeColorVar(p.type)};">${typeBadge}</span></div>` : ''}
     </div>
   `;
 }
@@ -2717,6 +2766,10 @@ function saveEditedPlateau(){
   const addressChanged = newAddress !== (list[idx].address || '');
   const cachedGeo = newAddress ? findCachedGeocode(newAddress) : null;
 
+  const newTimes = editTimesDraft
+    .map(s=>({time: s.time.trim(), type: s.type}))
+    .filter(s=>s.time || s.type !== null);
+
   list[idx] = {
     ...list[idx],
     name,
@@ -2724,8 +2777,7 @@ function saveEditedPlateau(){
     days: [...editSelectedDays],
     interval,
     anchorDate,
-    time: document.getElementById('ple-time').value.trim(),
-    type: editSelectedType,
+    times: newTimes.length ? newTimes : [{time:'', type:null}],
     exceptions: editExceptions.filter(ex => ex.days.length && (ex.time || ex.type !== null)),
     address: newAddress,
     instagram: document.getElementById('ple-instagram').value.trim()
@@ -2747,6 +2799,123 @@ function deletePlateauFromDetail(){
   if(currentPlateauId === null) return;
   deletePlateau(currentPlateauId);
   closePlateauDetail();
+}
+
+/* ---------- Mise à l'arrêt (tout le plateau, ou juste une séance) ---------- */
+let pausePlateauId = null;
+let pauseSelection = {whole: false, slotIndexes: new Set()};
+
+function openPausePlateauModal(id){
+  const p = loadPlateaux().find(x=>x.id===id);
+  if(!p) return;
+  pausePlateauId = id;
+  pauseSelection = {whole: false, slotIndexes: new Set()};
+
+  const baseTimes = p.times || [];
+  let html = `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:8px;" id="pause-whole-btn" onclick="togglePauseWhole()">Tout le plateau</button>`;
+  const activeTimes = baseTimes.filter(t=>!t.paused);
+  if(activeTimes.length){
+    html += `<div class="label" style="margin:8px 0 6px;">Ou juste une séance (sur tous les jours où elle a lieu, pas juste aujourd'hui) :</div>`;
+    baseTimes.forEach((t,i)=>{
+      if(t.paused) return;
+      html += `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:6px;" id="pause-slot-btn-${i}" onclick="togglePauseSlot(${i})">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}</button>`;
+    });
+  }
+  document.getElementById('pause-plateau-options').innerHTML = html;
+  document.getElementById('pause-plateau-modal-overlay').style.display = 'flex';
+}
+function togglePauseWhole(){
+  pauseSelection.whole = !pauseSelection.whole;
+  document.getElementById('pause-whole-btn').classList.toggle('selected', pauseSelection.whole);
+}
+function togglePauseSlot(i){
+  if(pauseSelection.slotIndexes.has(i)) pauseSelection.slotIndexes.delete(i);
+  else pauseSelection.slotIndexes.add(i);
+  document.getElementById('pause-slot-btn-'+i).classList.toggle('selected', pauseSelection.slotIndexes.has(i));
+}
+function closePausePlateauModal(){
+  document.getElementById('pause-plateau-modal-overlay').style.display = 'none';
+  pausePlateauId = null;
+}
+function confirmPausePlateau(){
+  if(pausePlateauId === null) return;
+  const list = loadPlateaux();
+  const idx = list.findIndex(x=>x.id===pausePlateauId);
+  if(idx < 0) return;
+
+  if(pauseSelection.whole){
+    list[idx].paused = true;
+  } else if(pauseSelection.slotIndexes.size){
+    pauseSelection.slotIndexes.forEach(i=>{
+      if(list[idx].times[i]) list[idx].times[i].paused = true;
+    });
+  } else {
+    showToast('Choisis au moins une option');
+    return;
+  }
+  savePlateaux(list);
+  closePausePlateauModal();
+  showToast("Mis à l'arrêt ✓");
+  closePlateauDetail();
+}
+
+// Réactive tout le plateau (sans argument) ou une séance précise (avec son index)
+function reactivatePlateau(id, slotIndex){
+  const list = loadPlateaux();
+  const idx = list.findIndex(x=>x.id===id);
+  if(idx < 0) return;
+  if(slotIndex === undefined){
+    delete list[idx].paused;
+    if(list[idx].times) list[idx].times.forEach(t=>delete t.paused);
+  } else if(list[idx].times && list[idx].times[slotIndex]){
+    delete list[idx].times[slotIndex].paused;
+  }
+  savePlateaux(list);
+  showToast('Relancé ✓');
+  renderPlateauxView();
+}
+
+function isPlateauPaused(p){
+  return !!(p.paused || (p.times && p.times.some(t=>t.paused)));
+}
+
+function renderPausedPlateauxList(){
+  const wrap = document.getElementById('plateaux-paused-list');
+  if(!wrap) return;
+  const paused = loadPlateaux().filter(p => (p.city || 'Paris') === currentPlateauxCity && isPlateauPaused(p));
+
+  if(!paused.length){
+    wrap.innerHTML = `<div class="empty">Aucun plateau à l'arrêt.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = paused.map(p=>{
+    if(p.paused){
+      return `
+        <div class="text-card">
+          <div class="text-card-top">
+            <div class="text-card-name">${escapeHtml(p.name)}</div>
+            <button class="pair-btn" onclick="reactivatePlateau(${p.id})">↩ Relancer</button>
+          </div>
+          <div class="plateau-row-meta">Tout le plateau est à l'arrêt</div>
+        </div>
+      `;
+    }
+    const pausedSlots = (p.times || []).map((t,i)=>({t,i})).filter(x=>x.t.paused);
+    return `
+      <div class="text-card">
+        <div class="text-card-top">
+          <div class="text-card-name">${escapeHtml(p.name)}</div>
+        </div>
+        ${pausedSlots.map(({t,i})=>`
+          <div class="plateau-row-meta" style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+            <span>${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')} à l'arrêt</span>
+            <button class="pair-btn" onclick="reactivatePlateau(${p.id}, ${i})">↩ Relancer</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
 }
 
 // Historique : les scènes notées sous ce nom de plateau (recherche par nom exact)
@@ -2862,7 +3031,8 @@ function prefillTypeFromAgenda(){
   if(!name){ row.style.display = 'none'; return; }
 
   const matchingPlateaux = loadPlateaux().filter(p => p.name.toLowerCase() === name.toLowerCase());
-  const slots = matchingPlateaux.map(p => ({time: p.time, type: p.type}));
+  const slots = [];
+  matchingPlateaux.forEach(p => (p.times && p.times.length ? p.times : [{time:'',type:null}]).forEach(t => slots.push({time: t.time, type: t.type})));
 
   if(slots.length <= 1){
     row.style.display = 'none';
@@ -3749,9 +3919,46 @@ function renderHistory(list){
   });
 }
 
+// Nettoie les sessions de textes qui ne correspondent plus à aucune scène
+// existante (par ex. une scène supprimée avant que la suppression en cascade
+// n'existe). Ne touche jamais aux ajustements manuels, ni aux sessions sans
+// nom de plateau (rien à vérifier dans ce cas).
+function cleanupOrphanedSessions(){
+  const scenes = loadScenes();
+  const sceneKeys = new Set(scenes.map(s => (s.nom||'') + '|' + s.date));
+  const texts = loadTexts();
+  let changed = false;
+  texts.forEach(t=>{
+    const before = t.sessions.length;
+    t.sessions = t.sessions.filter(s=>{
+      if(s.manual) return true;
+      if(!s.plateau) return true;
+      return sceneKeys.has(s.plateau + '|' + s.date);
+    });
+    if(t.sessions.length !== before) changed = true;
+  });
+  if(changed) saveTexts(texts);
+}
+
 function deleteScene(id){
-  const list = loadScenes().filter(s=>s.id!==id);
-  saveScenes(list);
+  const list = loadScenes();
+  const scene = list.find(s=>s.id===id);
+  const remaining = list.filter(s=>s.id!==id);
+  saveScenes(remaining);
+
+  // Retire aussi les sessions de textes liées à cette scène précise (même
+  // plateau, même date), sinon elles restent "fantômes" dans les stats.
+  if(scene && scene.nom){
+    const texts = loadTexts();
+    let changed = false;
+    texts.forEach(t=>{
+      const before = t.sessions.length;
+      t.sessions = t.sessions.filter(s => !(s.plateau === scene.nom && s.date === scene.date));
+      if(t.sessions.length !== before) changed = true;
+    });
+    if(changed) saveTexts(texts);
+  }
+
   renderStats();
   renderHomeRating();
 }
@@ -4098,10 +4305,13 @@ function renderHomeWeekSummary(){
   const scenes = loadScenes().filter(s => s.date >= weekAgoStr);
   const sceneCount = scenes.length;
   const netMoney = scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0);
+  const {belles, sympas, nulles} = computeTypeCounts(scenes);
 
+  // Les ajustements manuels (rattrapage de blagues déjà validées avant l'app)
+  // ne représentent pas de vraies sessions cette semaine — on les exclut.
   let tested = 0, validated = 0;
   loadTexts().forEach(t => (t.sessions||[]).forEach(s=>{
-    if(s.date >= weekAgoStr){
+    if(!s.manual && s.date >= weekAgoStr){
       tested += (s.tested||0);
       validated += (s.validated||0);
     }
@@ -4113,11 +4323,18 @@ function renderHomeWeekSummary(){
   }
 
   const sign = netMoney >= 0 ? '+' : '';
+  const moneyColor = netMoney >= 0 ? 'var(--s2)' : 'var(--s0)';
   wrap.innerHTML = `
     <div class="section-label">Cette semaine</div>
-    <div class="stat-card">
-      <div class="plateau-row-meta" style="font-size:13px;color:var(--text);">
-        ${sceneCount} scène(s) · ${tested} testée(s) · ${validated} validée(s) · ${sign}${Math.round(netMoney)}€
+    <div class="stat-card week-summary-card">
+      <div class="week-stat"><span class="big-num">${sceneCount}</span><span class="label">scène(s)</span></div>
+      <div class="week-stat"><span class="big-num" style="color:${moneyColor};">${sign}${Math.round(netMoney)}€</span><span class="label">bénéfice</span></div>
+      <div class="week-stat"><span class="big-num">${tested}</span><span class="label">testée(s)</span></div>
+      <div class="week-stat"><span class="big-num">${validated}</span><span class="label">validée(s)</span></div>
+      <div class="week-stat">
+        <div class="quality-pill" style="background:var(--s0);">${nulles}</div>
+        <div class="quality-pill" style="background:var(--s1);">${sympas}</div>
+        <div class="quality-pill" style="background:var(--s2);">${belles}</div>
       </div>
     </div>
   `;
@@ -4163,13 +4380,20 @@ function computeSpectacleEstimate(){
   const totalValidated = allSessions.reduce((a,s)=>a+(s.validated||0),0);
   const remaining = Math.max(0, SPECTACLE_TARGET - totalValidated);
 
+  // Le rythme (blagues validées par jour) ne doit compter que les vraies
+  // sessions de test — un ajustement manuel (rattrapage de blagues déjà
+  // validées avant l'app) fait avancer le total mais ne reflète pas un
+  // vrai rythme de travail, et fausserait la projection de date.
+  const realSessions = allSessions.filter(s => !s.manual);
+  const realValidated = realSessions.reduce((a,s)=>a+(s.validated||0),0);
+
   const now = new Date();
   let ratePerDay = 0;
-  if(allSessions.length){
-    const dates = allSessions.filter(s=>s.date).map(s=>new Date(s.date)).sort((a,b)=>a-b);
+  if(realSessions.length){
+    const dates = realSessions.filter(s=>s.date).map(s=>new Date(s.date)).sort((a,b)=>a-b);
     const firstDate = dates[0];
     const daysSinceStart = Math.max(1, Math.round((now - firstDate) / (1000*60*60*24)));
-    ratePerDay = totalValidated / daysSinceStart;
+    ratePerDay = realValidated / daysSinceStart;
   }
 
   let projectedDate = null;
@@ -5089,6 +5313,7 @@ function initNumberGen(){
 }
 
 /* ---------- init ---------- */
+cleanupOrphanedSessions();
 document.getElementById('f-nom').addEventListener('input', updateLiveScore);
 document.getElementById('f-nom').addEventListener('input', prefillTypeFromAgenda);
 document.getElementById('f-date').addEventListener('change', updateLiveScore);
