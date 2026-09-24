@@ -1255,7 +1255,6 @@
         <datalist id="plateau-names-list"></datalist>
       </div>
       <div id="plateau-timeslot-row" style="display:none;margin:-8px 0 14px;">
-        <div class="label" style="margin-bottom:6px;">Plusieurs séances existent, laquelle ?</div>
         <div class="day-chip-row" id="plateau-timeslot-chips"></div>
       </div>
       <div class="field">
@@ -1603,16 +1602,14 @@
           </div>
 
           <div class="field">
-            <label>Séances (partagent les mêmes jours ci-dessus)</label>
+            <label>Séances</label>
             <div id="pl-times-list" style="margin-top:6px;"></div>
             <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addPlTimeRow()">+ Ajouter une séance</button>
           </div>
 
           <div class="field">
-            <label>Jours avec un horaire différent (optionnel)</label>
             <div id="pl-exceptions-list" style="margin-top:6px;"></div>
             <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addPlException()">+ Ajouter une exception</button>
-            <div class="label" style="margin-top:6px;">Coche aussi le jour dans "Jour(s)" ci-dessus si c'est une séance en plus ce jour-là ; laisse-le décoché si ça remplace les séances normales ce jour-là.</div>
           </div>
 
           <div class="field">
@@ -1705,16 +1702,14 @@
           </div>
 
           <div class="field">
-            <label>Séances (partagent les mêmes jours ci-dessus)</label>
+            <label>Séances</label>
             <div id="ple-times-list" style="margin-top:6px;"></div>
             <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addEditTimeRow()">+ Ajouter une séance</button>
           </div>
 
           <div class="field">
-            <label>Jours avec un horaire différent (optionnel)</label>
             <div id="ple-exceptions-list" style="margin-top:6px;"></div>
             <button type="button" class="backlink" style="padding:8px 0 0;" onclick="addEditException()">+ Ajouter une exception</button>
-            <div class="label" style="margin-top:6px;">Coche aussi le jour dans "Jour(s)" ci-dessus si c'est une séance en plus ce jour-là ; laisse-le décoché si ça remplace les séances normales ce jour-là.</div>
           </div>
 
           <div class="field">
@@ -2231,9 +2226,11 @@ function getSlotsForDay(p, dow){
   if(p.paused) return [];
   const slots = [];
   const inMainDays = !!(p.days && p.days.includes(dow));
-  const matchingExceptions = (p.exceptions || []).filter(ex => ex.days && ex.days.includes(dow));
+  const matchingExceptions = (p.exceptions || []).filter(ex =>
+    ex.days && ex.days.includes(dow) && !(ex.pausedDays && ex.pausedDays.includes(dow))
+  );
   const allBaseTimes = (p.times && p.times.length) ? p.times : [{time: p.time, type: p.type}];
-  const baseTimes = allBaseTimes.filter(bt => !bt.paused);
+  const baseTimes = allBaseTimes.filter(bt => !bt.paused && !(bt.pausedDays && bt.pausedDays.includes(dow)));
 
   if(inMainDays){
     baseTimes.forEach(bt=>{
@@ -2681,35 +2678,16 @@ function openPlateauDetail(id){
 
 function renderPlateauViewInfo(p){
   const wrap = document.getElementById('plateau-view-info');
-  const daysLabel = (p.days && p.days.length)
-    ? DAY_ORDER_MON_FIRST.filter(d=>p.days.includes(d)).map(d=>DAY_NAMES_FR[d]).join(', ')
-    : null;
   const playCount = getPlateauPlayCount(p.name);
   const baseTimes = (p.times && p.times.length) ? p.times : [{time:'', type:null}];
   const mainColor = typeColorVar(baseTimes[0].type);
-
-  const timesHtml = baseTimes.map(t=>{
-    const badge = typeLabelText(t.type);
-    return `<div class="plateau-row-meta">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}${badge ? ' · '+badge : ''}</div>`;
-  }).join('');
-
-  const exceptionsHtml = (p.exceptions && p.exceptions.length) ? p.exceptions.map(ex=>{
-    const exDaysLabel = EXCEPTION_DAY_ORDER.filter(d=>ex.days.includes(d)).map(d=>EXCEPTION_DAY_ABBR[d]).join(', ');
-    const exBadge = typeLabelText(ex.type);
-    const isAdditive = ex.days.some(d => p.days && p.days.includes(d));
-    const prefix = isAdditive ? `${exDaysLabel} (séance en plus)` : `${exDaysLabel} (à la place de l'horaire normal)`;
-    return `<div class="plateau-row-meta">${prefix} : ${escapeHtml(formatPlateauTime(ex.time) || 'Sans heure')}${exBadge ? ' · '+exBadge : ''}</div>`;
-  }).join('') : '';
 
   wrap.innerHTML = `
     <div class="stat-card" style="border-left:4px solid ${mainColor};">
       <div style="display:flex;justify-content:space-between;gap:8px;">
         <div style="flex:1;min-width:0;">
           <div class="big-num" style="font-size:19px;">${escapeHtml(p.name)}</div>
-          ${daysLabel ? `<div class="plateau-row-meta" style="margin-top:8px;">${daysLabel} · ${plateauFreqLabel(p.interval || 1)}</div>` : `<div class="plateau-row-meta" style="margin-top:8px;">Jour non renseigné</div>`}
-          ${timesHtml}
-          ${exceptionsHtml}
-          ${p.address ? `<div class="plateau-row-meta">${escapeHtml(p.address)}</div>` : ''}
+          ${p.address ? `<div class="plateau-row-meta" style="margin-top:8px;">${escapeHtml(p.address)}</div>` : ''}
           <div class="plateau-row-meta" style="margin-top:6px;font-weight:700;color:var(--accent);">Joué ${playCount} fois</div>
         </div>
         ${plateauActionsHtml(p)}
@@ -2791,24 +2769,48 @@ function deletePlateauFromDetail(){
 
 /* ---------- Mise à l'arrêt (tout le plateau, ou juste une séance) ---------- */
 let pausePlateauId = null;
-let pauseSelection = {whole: false, slotIndexes: new Set()};
+let pauseSelection = {whole: false, slots: {}, exceptions: {}};
 
 function openPausePlateauModal(id){
   const p = loadPlateaux().find(x=>x.id===id);
   if(!p) return;
   pausePlateauId = id;
-  pauseSelection = {whole: false, slotIndexes: new Set()};
+  pauseSelection = {whole: false, slots: {}, exceptions: {}};
+
+  let html = `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:10px;" id="pause-whole-btn" onclick="togglePauseWhole()">Tout le plateau</button>`;
 
   const baseTimes = p.times || [];
-  let html = `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:8px;" id="pause-whole-btn" onclick="togglePauseWhole()">Tout le plateau</button>`;
-  const activeTimes = baseTimes.filter(t=>!t.paused);
-  if(activeTimes.length){
-    html += `<div class="label" style="margin:8px 0 6px;">Ou juste une séance (sur tous les jours où elle a lieu, pas juste aujourd'hui) :</div>`;
-    baseTimes.forEach((t,i)=>{
-      if(t.paused) return;
-      html += `<button type="button" class="day-chip" style="flex:none;width:100%;margin-bottom:6px;" id="pause-slot-btn-${i}" onclick="togglePauseSlot(${i})">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}</button>`;
-    });
-  }
+  baseTimes.forEach((t,i)=>{
+    if(t.paused) return;
+    const alreadyPausedDays = t.pausedDays || [];
+    const activeDays = DAY_ORDER_MON_FIRST.filter(d => (p.days||[]).includes(d) && !alreadyPausedDays.includes(d));
+    if(!activeDays.length) return;
+    pauseSelection.slots[i] = new Set();
+    html += `
+      <div class="exception-block">
+        <div class="label" style="margin-bottom:6px;">${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')}</div>
+        <div class="day-chip-row">
+          ${activeDays.map(d=>`<button type="button" class="day-chip" onclick="togglePauseSlotDay(${i},${d},this)">${DAY_NAMES_FR[d].slice(0,3)}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  (p.exceptions || []).forEach((ex,j)=>{
+    const alreadyPausedDays = ex.pausedDays || [];
+    const activeDays = EXCEPTION_DAY_ORDER.filter(d => ex.days.includes(d) && !alreadyPausedDays.includes(d));
+    if(!activeDays.length) return;
+    pauseSelection.exceptions[j] = new Set();
+    html += `
+      <div class="exception-block">
+        <div class="label" style="margin-bottom:6px;">${escapeHtml(formatPlateauTime(ex.time) || 'Sans heure')}</div>
+        <div class="day-chip-row">
+          ${activeDays.map(d=>`<button type="button" class="day-chip" onclick="togglePauseExceptionDay(${j},${d},this)">${EXCEPTION_DAY_ABBR[d]}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+
   document.getElementById('pause-plateau-options').innerHTML = html;
   document.getElementById('pause-plateau-modal-overlay').style.display = 'flex';
 }
@@ -2816,10 +2818,15 @@ function togglePauseWhole(){
   pauseSelection.whole = !pauseSelection.whole;
   document.getElementById('pause-whole-btn').classList.toggle('selected', pauseSelection.whole);
 }
-function togglePauseSlot(i){
-  if(pauseSelection.slotIndexes.has(i)) pauseSelection.slotIndexes.delete(i);
-  else pauseSelection.slotIndexes.add(i);
-  document.getElementById('pause-slot-btn-'+i).classList.toggle('selected', pauseSelection.slotIndexes.has(i));
+function togglePauseSlotDay(i, d, btn){
+  const set = pauseSelection.slots[i];
+  if(set.has(d)) set.delete(d); else set.add(d);
+  btn.classList.toggle('selected');
+}
+function togglePauseExceptionDay(j, d, btn){
+  const set = pauseSelection.exceptions[j];
+  if(set.has(d)) set.delete(d); else set.add(d);
+  btn.classList.toggle('selected');
 }
 function closePausePlateauModal(){
   document.getElementById('pause-plateau-modal-overlay').style.display = 'none';
@@ -2830,16 +2837,32 @@ function confirmPausePlateau(){
   const list = loadPlateaux();
   const idx = list.findIndex(x=>x.id===pausePlateauId);
   if(idx < 0) return;
+  const p = list[idx];
 
   if(pauseSelection.whole){
-    list[idx].paused = true;
-  } else if(pauseSelection.slotIndexes.size){
-    pauseSelection.slotIndexes.forEach(i=>{
-      if(list[idx].times[i]) list[idx].times[i].paused = true;
-    });
+    p.paused = true;
   } else {
-    showToast('Choisis au moins une option');
-    return;
+    let any = false;
+    Object.keys(pauseSelection.slots).forEach(i=>{
+      const days = pauseSelection.slots[i];
+      if(days.size){
+        any = true;
+        const t = p.times[i];
+        t.pausedDays = [...new Set([...(t.pausedDays||[]), ...days])];
+      }
+    });
+    Object.keys(pauseSelection.exceptions).forEach(j=>{
+      const days = pauseSelection.exceptions[j];
+      if(days.size){
+        any = true;
+        const ex = p.exceptions[j];
+        ex.pausedDays = [...new Set([...(ex.pausedDays||[]), ...days])];
+      }
+    });
+    if(!any){
+      showToast('Choisis au moins un jour à mettre en pause');
+      return;
+    }
   }
   savePlateaux(list);
   closePausePlateauModal();
@@ -2847,16 +2870,35 @@ function confirmPausePlateau(){
   closePlateauDetail();
 }
 
-// Réactive tout le plateau (sans argument) ou une séance précise (avec son index)
-function reactivatePlateau(id, slotIndex){
+function reactivateWholePlateau(id){
   const list = loadPlateaux();
   const idx = list.findIndex(x=>x.id===id);
   if(idx < 0) return;
-  if(slotIndex === undefined){
-    delete list[idx].paused;
-    if(list[idx].times) list[idx].times.forEach(t=>delete t.paused);
-  } else if(list[idx].times && list[idx].times[slotIndex]){
+  delete list[idx].paused;
+  if(list[idx].times) list[idx].times.forEach(t=>{ delete t.paused; delete t.pausedDays; });
+  if(list[idx].exceptions) list[idx].exceptions.forEach(ex=>delete ex.pausedDays);
+  savePlateaux(list);
+  showToast('Relancé ✓');
+  renderPlateauxView();
+}
+function reactivatePlateauSlot(id, slotIndex){
+  const list = loadPlateaux();
+  const idx = list.findIndex(x=>x.id===id);
+  if(idx < 0) return;
+  if(list[idx].times && list[idx].times[slotIndex]){
     delete list[idx].times[slotIndex].paused;
+    delete list[idx].times[slotIndex].pausedDays;
+  }
+  savePlateaux(list);
+  showToast('Relancé ✓');
+  renderPlateauxView();
+}
+function reactivatePlateauException(id, exIndex){
+  const list = loadPlateaux();
+  const idx = list.findIndex(x=>x.id===id);
+  if(idx < 0) return;
+  if(list[idx].exceptions && list[idx].exceptions[exIndex]){
+    delete list[idx].exceptions[exIndex].pausedDays;
   }
   savePlateaux(list);
   showToast('Relancé ✓');
@@ -2864,7 +2906,10 @@ function reactivatePlateau(id, slotIndex){
 }
 
 function isPlateauPaused(p){
-  return !!(p.paused || (p.times && p.times.some(t=>t.paused)));
+  if(p.paused) return true;
+  if(p.times && p.times.some(t => t.paused || (t.pausedDays && t.pausedDays.length))) return true;
+  if(p.exceptions && p.exceptions.some(ex => ex.pausedDays && ex.pausedDays.length)) return true;
+  return false;
 }
 
 function renderPausedPlateauxList(){
@@ -2877,19 +2922,22 @@ function renderPausedPlateauxList(){
     return;
   }
 
+  const daysLabel = days => DAY_ORDER_MON_FIRST.filter(d=>days.includes(d)).map(d=>DAY_NAMES_FR[d].slice(0,3)).join(', ');
+
   wrap.innerHTML = paused.map(p=>{
     if(p.paused){
       return `
         <div class="text-card">
           <div class="text-card-top">
             <div class="text-card-name">${escapeHtml(p.name)}</div>
-            <button class="pair-btn" onclick="reactivatePlateau(${p.id})">↩ Relancer</button>
+            <button class="pair-btn" onclick="reactivateWholePlateau(${p.id})">↩ Relancer</button>
           </div>
           <div class="plateau-row-meta">Tout le plateau est à l'arrêt</div>
         </div>
       `;
     }
-    const pausedSlots = (p.times || []).map((t,i)=>({t,i})).filter(x=>x.t.paused);
+    const pausedSlots = (p.times || []).map((t,i)=>({t,i})).filter(x=>x.t.paused || (x.t.pausedDays && x.t.pausedDays.length));
+    const pausedExceptions = (p.exceptions || []).map((ex,j)=>({ex,j})).filter(x=>x.ex.pausedDays && x.ex.pausedDays.length);
     return `
       <div class="text-card">
         <div class="text-card-top">
@@ -2897,8 +2945,14 @@ function renderPausedPlateauxList(){
         </div>
         ${pausedSlots.map(({t,i})=>`
           <div class="plateau-row-meta" style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
-            <span>${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')} à l'arrêt</span>
-            <button class="pair-btn" onclick="reactivatePlateau(${p.id}, ${i})">↩ Relancer</button>
+            <span>${escapeHtml(formatPlateauTime(t.time) || 'Sans heure')} : ${t.pausedDays && t.pausedDays.length ? daysLabel(t.pausedDays) : 'Tous les jours'}</span>
+            <button class="pair-btn" onclick="reactivatePlateauSlot(${p.id}, ${i})">↩ Relancer</button>
+          </div>
+        `).join('')}
+        ${pausedExceptions.map(({ex,j})=>`
+          <div class="plateau-row-meta" style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+            <span>${escapeHtml(formatPlateauTime(ex.time) || 'Sans heure')} : ${daysLabel(ex.pausedDays)}</span>
+            <button class="pair-btn" onclick="reactivatePlateauException(${p.id}, ${j})">↩ Relancer</button>
           </div>
         `).join('')}
       </div>
@@ -2915,46 +2969,78 @@ function renderPlateauHistory(plateauName){
     return;
   }
   const avg = (scenes.reduce((a,s)=>a+(s.total||0),0) / scenes.length).toFixed(1);
-  wrap.innerHTML = `
-    <div class="stat-card" style="text-align:center;margin-bottom:8px;">
-      <div class="big-num">${scenes.length}</div>
-      <div class="label">Session(s) jouée(s) · moyenne ${avg}/20</div>
-    </div>
-    ${scenes.map(s=>`
+
+  // Regroupe par séance (heure précisée dans Noter) quand l'info est connue.
+  const groups = {};
+  scenes.forEach(s=>{
+    const key = s.plateauTime ? formatPlateauTime(s.plateauTime) : 'Sans horaire précisé';
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+  const groupKeys = Object.keys(groups);
+  const multi = groupKeys.length > 1;
+
+  const historyBlock = groupKeys.map(key=>`
+    ${multi ? `<div class="label" style="margin:12px 2px 4px;">${escapeHtml(key)}</div>` : ''}
+    ${groups[key].map(s=>`
       <div class="session-item">
         <div class="sdate">${formatDate(s.date)}</div>
         <div class="sres"><span class="ok">${s.total||0}/20</span></div>
       </div>
     `).join('')}
+  `).join('');
+
+  wrap.innerHTML = `
+    <div class="stat-card" style="text-align:center;margin-bottom:8px;">
+      <div class="big-num">${scenes.length}</div>
+      <div class="label">Session(s) jouée(s) · moyenne ${avg}/20</div>
+    </div>
+    ${historyBlock}
   `;
 }
 
-// Thèmes abordés : textes dont au moins une session est liée à ce plateau
+// Thèmes abordés : textes dont au moins une session est liée à ce plateau,
+// groupés par séance précise (heure) quand l'info est connue.
 function renderPlateauThemes(plateauName){
   const wrap = document.getElementById('plateau-themes');
   const texts = loadTexts();
-  const rows = [];
+
+  const groups = {};
   texts.forEach(t=>{
-    const here = (t.sessions||[]).filter(s=>s.plateau === plateauName);
-    if(here.length){
-      const validated = here.reduce((a,s)=>a+(s.validated||0),0);
-      rows.push({name: t.name, count: here.length, validated});
-    }
+    (t.sessions||[]).forEach(s=>{
+      if(s.plateau !== plateauName) return;
+      const key = s.plateauTime ? formatPlateauTime(s.plateauTime) : 'Sans horaire précisé';
+      if(!groups[key]) groups[key] = {};
+      if(!groups[key][t.name]) groups[key][t.name] = {count:0, validated:0};
+      groups[key][t.name].count++;
+      groups[key][t.name].validated += (s.validated||0);
+    });
   });
-  if(!rows.length){
+
+  const groupKeys = Object.keys(groups);
+  if(!groupKeys.length){
     wrap.innerHTML = `<div class="empty">Aucun sujet encore relié à ce plateau.</div>`;
     return;
   }
-  rows.sort((a,b)=>b.count-a.count);
-  wrap.innerHTML = rows.map(r=>`
-    <div class="rotation-status-row">
-      <div class="rotation-status-top">
-        <span class="rotation-status-name">${escapeHtml(r.name)}</span>
-        <span class="rotation-status-count">${r.count} fois</span>
-      </div>
-      <div class="rotation-status-meta">${r.validated} validée(s) ici</div>
-    </div>
-  `).join('');
+  const multi = groupKeys.length > 1;
+
+  wrap.innerHTML = groupKeys.map(key=>{
+    const rows = Object.entries(groups[key])
+      .map(([name,v])=>({name, ...v}))
+      .sort((a,b)=>b.count-a.count);
+    return `
+      ${multi ? `<div class="label" style="margin:12px 2px 4px;">${escapeHtml(key)}</div>` : ''}
+      ${rows.map(r=>`
+        <div class="rotation-status-row">
+          <div class="rotation-status-top">
+            <span class="rotation-status-name">${escapeHtml(r.name)}</span>
+            <span class="rotation-status-count">${r.count} fois</span>
+          </div>
+          <div class="rotation-status-meta">${r.validated} validée(s) ici</div>
+        </div>
+      `).join('')}
+    `;
+  }).join('');
 }
 
 
@@ -2990,7 +3076,10 @@ function setScore(key, val, btn){
 // Quand le nom du plateau correspond à un plateau connu dans Agenda (qui a un
 // type renseigné), préremplit automatiquement le critère "Type de plateau".
 // Applique le type d'un plateau précis (par id) au critère "Type de plateau"
+let selectedSessionTime = null;
+
 function applySlotType(slot){
+  selectedSessionTime = slot ? slot.time : null;
   if(!slot || slot.type === null || slot.type === undefined) return;
   const row = document.querySelector('.score-row[data-key="type_plateau"]');
   if(!row) return;
@@ -3016,17 +3105,36 @@ function prefillTypeFromAgenda(){
   const row = document.getElementById('plateau-timeslot-row');
   const chipsWrap = document.getElementById('plateau-timeslot-chips');
 
+  selectedSessionTime = null;
   if(!name){ row.style.display = 'none'; return; }
 
+  const dateVal = document.getElementById('f-date').value;
+  const dow = dateVal ? new Date(dateVal+'T00:00:00').getDay() : new Date().getDay();
+
   const matchingPlateaux = loadPlateaux().filter(p => p.name.toLowerCase() === name.toLowerCase());
-  const slots = [];
-  matchingPlateaux.forEach(p => (p.times && p.times.length ? p.times : [{time:'',type:null}]).forEach(t => slots.push({time: t.time, type: t.type})));
+  let slots = [];
+  matchingPlateaux.forEach(p => getSlotsForDay(p, dow).forEach(s => slots.push(s)));
+
+  // Si ce jour précis ne correspond à aucune séance connue (jour atypique,
+  // test en avance...), on retombe sur toutes les séances de base plutôt que
+  // de ne rien proposer du tout.
+  if(!slots.length){
+    matchingPlateaux.forEach(p => (p.times||[]).forEach(t=>slots.push({time: t.time, type: t.type})));
+  }
 
   if(slots.length <= 1){
     row.style.display = 'none';
     if(slots.length === 1) applySlotType(slots[0]);
     return;
   }
+
+  slots = slots.slice().sort((a,b)=>{
+    const ta = parseTimeToMinutes(a.time), tb = parseTimeToMinutes(b.time);
+    if(ta === null && tb === null) return 0;
+    if(ta === null) return 1;
+    if(tb === null) return -1;
+    return ta - tb;
+  });
 
   row.style.display = 'block';
   window._plateauSlotsCache = slots;
@@ -3055,6 +3163,7 @@ function populatePlateauNames(){
 function resetForm(){
   currentAnswers = {};
   sceneTextSelections = {};
+  selectedSessionTime = null;
   document.getElementById('f-nom').value = '';
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('f-gains').value = '';
@@ -3155,6 +3264,7 @@ function saveScene(){
   const scene = {
     id: Date.now(),
     nom, date,
+    plateauTime: selectedSessionTime || null,
     answers: {...currentAnswers},
     total,
     gains, depenses
@@ -3197,7 +3307,8 @@ function saveScene(){
         date,
         tested: sel.tested||0,
         validated: sel.validated||0,
-        plateau: nom
+        plateau: nom,
+        plateauTime: selectedSessionTime || null
       });
     }
   });
@@ -4282,38 +4393,35 @@ function renderHomeRating(){
   renderHomeTodayPlateaux();
 }
 
+const MONTH_NAMES_FULL_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
 function renderHomeWeekSummary(){
   const wrap = document.getElementById('home-week-summary');
   if(!wrap) return;
 
   const now = new Date();
-  const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate()-7);
-  const weekAgoStr = weekAgo.toISOString().slice(0,10);
+  const monthStr = now.toISOString().slice(0,7); // "YYYY-MM"
+  const monthName = MONTH_NAMES_FULL_FR[now.getMonth()];
 
-  const scenes = loadScenes().filter(s => s.date >= weekAgoStr);
+  const scenes = loadScenes().filter(s => s.date && s.date.slice(0,7) === monthStr);
   const sceneCount = scenes.length;
   const netMoney = scenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0);
   const {belles, sympas, nulles} = computeTypeCounts(scenes);
 
   // Les ajustements manuels (rattrapage de blagues déjà validées avant l'app)
-  // ne représentent pas de vraies sessions cette semaine — on les exclut.
+  // ne représentent pas de vraies sessions ce mois-ci — on les exclut.
   let tested = 0, validated = 0;
   loadTexts().forEach(t => (t.sessions||[]).forEach(s=>{
-    if(!s.manual && s.date >= weekAgoStr){
+    if(!s.manual && s.date && s.date.slice(0,7) === monthStr){
       tested += (s.tested||0);
       validated += (s.validated||0);
     }
   }));
 
-  if(!sceneCount && !tested && !validated && netMoney === 0){
-    wrap.innerHTML = '';
-    return;
-  }
-
   const sign = netMoney >= 0 ? '+' : '';
   const moneyColor = netMoney >= 0 ? 'var(--s2)' : 'var(--s0)';
   wrap.innerHTML = `
-    <div class="section-label">Cette semaine</div>
+    <div class="section-label">${monthName}</div>
     <div class="stat-card week-summary-card">
       <div class="week-stat"><span class="big-num">${sceneCount}</span><span class="label">scène(s)</span></div>
       <div class="week-stat"><span class="big-num" style="color:${moneyColor};">${sign}${Math.round(netMoney)}€</span><span class="label">bénéfice</span></div>
@@ -5305,6 +5413,7 @@ cleanupOrphanedSessions();
 document.getElementById('f-nom').addEventListener('input', updateLiveScore);
 document.getElementById('f-nom').addEventListener('input', prefillTypeFromAgenda);
 document.getElementById('f-date').addEventListener('change', updateLiveScore);
+document.getElementById('f-date').addEventListener('change', prefillTypeFromAgenda);
 resetForm();
 renderHomeRating();
 generateRandomWord();
