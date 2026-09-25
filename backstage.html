@@ -1166,11 +1166,9 @@
         <div class="stat-card gen-card" id="word-gen-card" onclick="generateRandomWord()" style="cursor:pointer;">
           <div class="big-num" id="random-word-display" style="font-size:22px;">—</div>
         </div>
-        <div class="stat-card gen-card" id="number-gen-card" onclick="generateRandomNumber()" style="position:relative;cursor:pointer;">
-          <button class="icon-trash-btn small numgen-edit-btn" onclick="event.stopPropagation(); openNumberGenModal()" title="Changer le maximum">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-          </button>
-          <div class="big-num" id="random-number-display" style="font-size:26px;">—</div>
+        <div class="stat-card gen-card" id="writing-list-card" onclick="handleWritingListClick()" style="cursor:pointer;">
+          <div class="big-num" id="writing-list-display" style="font-size:16px;">Liste d'écriture</div>
+          <div class="label" id="writing-list-sub"></div>
         </div>
       </div>
 
@@ -1262,7 +1260,6 @@
         <input type="date" id="f-date">
       </div>
 
-      <div class="section-label">Notation (0 à 2 par critère)</div>
       <div id="criteria-list"></div>
 
       <div class="section-label">Sujets</div>
@@ -1777,15 +1774,6 @@
         <input type="file" id="import-file-input" accept="application/json" style="display:none;" onchange="importBackstageData(this.files[0])">
       </div>
       <button class="modal-close" onclick="closeBackupModal()">Fermer</button>
-    </div>
-  </div>
-
-  <div id="numgen-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeNumberGenModal()">
-    <div class="modal-card">
-      <div class="modal-title">Jusqu'à combien ?</div>
-      <input type="number" min="1" id="numgen-modal-input" style="width:100%;text-align:center;font-size:20px;font-weight:800;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);">
-      <button class="save-btn" style="width:100%;margin-top:14px;" onclick="confirmNumberGenMax()">Valider</button>
-      <button class="modal-close" onclick="closeNumberGenModal()">Annuler</button>
     </div>
   </div>
 
@@ -3153,8 +3141,14 @@ function updateLiveScore(){
 }
 
 function populatePlateauNames(){
+  const dateVal = document.getElementById('f-date').value;
+  const dow = dateVal ? new Date(dateVal+'T00:00:00').getDay() : new Date().getDay();
+
   const fromScenes = loadScenes().map(s => s.nom).filter(Boolean);
-  const fromAgenda = loadPlateaux().map(p => p.name).filter(Boolean);
+  const fromAgenda = loadPlateaux()
+    .filter(p => getSlotsForDay(p, dow).length > 0)
+    .map(p => p.name)
+    .filter(Boolean);
   const names = [...new Set([...fromAgenda, ...fromScenes])];
   const dl = document.getElementById('plateau-names-list');
   dl.innerHTML = names.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
@@ -3512,7 +3506,21 @@ function renderLineChart(list){
   const chartW = w - padLeft - padRight;
   const chartH = h - padTop - padBottom;
 
-  if(list.length < 2){
+  // En vue "Par mois" : si le mois précédent a lui aussi au moins 2 scènes,
+  // on superpose les deux courbes (alignées par jour du mois) pour comparer
+  // la progression d'un mois sur l'autre.
+  let prevList = [];
+  if(statsFilter.mode === 'month' && statsFilter.month){
+    const [y,m] = statsFilter.month.split('-').map(Number);
+    const prevDate = new Date(y, m-2, 1);
+    const prevKey = prevDate.getFullYear()+'-'+String(prevDate.getMonth()+1).padStart(2,'0');
+    prevList = loadScenes()
+      .filter(s=>s.date && s.date.slice(0,7)===prevKey)
+      .sort((a,b)=>a.date.localeCompare(b.date));
+  }
+  const showComparison = prevList.length >= 2 && list.length >= 2;
+
+  if(list.length < 2 && !showComparison){
     const t = document.createElementNS(ns,'text');
     t.setAttribute('x', w/2); t.setAttribute('y', h/2);
     t.setAttribute('text-anchor','middle');
@@ -3557,28 +3565,72 @@ function renderLineChart(list){
   axis.setAttribute('stroke', '#4A4550'); axis.setAttribute('stroke-width','1');
   svg.appendChild(axis);
 
-  const pts = list.map((s,i)=>{
-    const x = padLeft + (i/(list.length-1))*chartW;
-    const y = padTop + chartH - (s.total/20)*chartH;
-    return [x,y];
-  });
+  const drawSeries = (seriesList, color, xForItem) => {
+    const pts = seriesList.map((s,i)=>{
+      const x = xForItem(s,i);
+      const y = padTop + chartH - (s.total/20)*chartH;
+      return [x,y];
+    });
+    const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const line = document.createElementNS(ns,'path');
+    line.setAttribute('d',path);
+    line.setAttribute('fill','none');
+    line.setAttribute('stroke',color);
+    line.setAttribute('stroke-width','2.5');
+    line.setAttribute('stroke-linecap','round');
+    line.setAttribute('stroke-linejoin','round');
+    svg.appendChild(line);
+    pts.forEach(p=>{
+      const c = document.createElementNS(ns,'circle');
+      c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r','2.6');
+      c.setAttribute('fill',color);
+      svg.appendChild(c);
+    });
+    return pts;
+  };
 
-  const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
-  const line = document.createElementNS(ns,'path');
-  line.setAttribute('d',path);
-  line.setAttribute('fill','none');
-  line.setAttribute('stroke','#E8B33D');
-  line.setAttribute('stroke-width','2.5');
-  line.setAttribute('stroke-linecap','round');
-  line.setAttribute('stroke-linejoin','round');
-  svg.appendChild(line);
+  if(showComparison){
+    const dayOf = s => parseInt(s.date.slice(8,10),10);
+    const xForDay = s => padLeft + ((dayOf(s)-1)/30)*chartW;
 
-  pts.forEach(p=>{
-    const c = document.createElementNS(ns,'circle');
-    c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r','3');
-    c.setAttribute('fill','#E8B33D');
-    svg.appendChild(c);
-  });
+    drawSeries(prevList, '#C1554B', xForDay);
+    drawSeries(list, '#4A90D9', xForDay);
+
+    // légende
+    const legend = [
+      {color:'#4A90D9', label:'Ce mois-ci'},
+      {color:'#C1554B', label:'Mois précédent'}
+    ];
+    legend.forEach((l,i)=>{
+      const ly = padTop + i*11;
+      const dot = document.createElementNS(ns,'circle');
+      dot.setAttribute('cx', w-padRight-4); dot.setAttribute('cy', ly); dot.setAttribute('r','3');
+      dot.setAttribute('fill', l.color);
+      svg.appendChild(dot);
+      const txt = document.createElementNS(ns,'text');
+      txt.setAttribute('x', w-padRight-10); txt.setAttribute('y', ly+3);
+      txt.setAttribute('text-anchor','end'); txt.setAttribute('font-size','6.5');
+      txt.setAttribute('fill', l.color);
+      txt.textContent = l.label;
+      svg.appendChild(txt);
+    });
+
+    // x labels : jours 1, 15, 30
+    [1,15,30].forEach(day=>{
+      const x = padLeft + ((day-1)/30)*chartW;
+      const anchor = day===1 ? 'start' : (day===30 ? 'end' : 'middle');
+      const txt = document.createElementNS(ns,'text');
+      txt.setAttribute('x', x); txt.setAttribute('y', h-4);
+      txt.setAttribute('text-anchor', anchor);
+      txt.setAttribute('font-size','7');
+      txt.setAttribute('fill','#9C96A3');
+      txt.textContent = day;
+      svg.appendChild(txt);
+    });
+    return;
+  }
+
+  const pts = drawSeries(list, '#E8B33D', (s,i)=> padLeft + (i/(list.length-1))*chartW);
 
   // x labels : premier, milieu, dernier
   const midIdx = Math.floor((list.length-1)/2);
@@ -3642,28 +3694,47 @@ function computeWeekBuckets(list){
 
 function computeRegularityGaps(list){
   const sorted = list.slice().sort((a,b)=> a.date.localeCompare(b.date));
-  if(sorted.length < 2) return [];
+  if(!sorted.length) return [];
 
-  const gapsByMonth = {};
-  for(let i=1; i<sorted.length; i++){
-    const d0 = new Date(sorted[i-1].date);
-    const d1 = new Date(sorted[i].date);
-    const gapDays = Math.max(0, Math.round((d1-d0)/(1000*60*60*24)));
-    const key = sorted[i].date.slice(0,7);
-    if(!gapsByMonth[key]) gapsByMonth[key] = [];
-    gapsByMonth[key].push(gapDays);
-  }
+  const scenesByMonth = {};
+  sorted.forEach(s=>{
+    const key = s.date.slice(0,7);
+    if(!scenesByMonth[key]) scenesByMonth[key] = [];
+    scenesByMonth[key].push(s.date);
+  });
 
-  const keys = Object.keys(gapsByMonth).sort();
+  const keys = Object.keys(scenesByMonth).sort();
+  const todayStr = new Date().toISOString().slice(0,10);
+  const currentMonthKey = todayStr.slice(0,7);
+
   return keys.map(key=>{
-    const gaps = gapsByMonth[key];
-    const avg = gaps.reduce((a,b)=>a+b,0) / gaps.length;
+    const datesInMonth = scenesByMonth[key];
     const [y,m] = key.split('-');
+    const monthStart = `${y}-${m}-01`;
+    const lastDay = new Date(parseInt(y,10), parseInt(m,10), 0).getDate();
+    const monthEnd = `${y}-${m}-${String(lastDay).padStart(2,'0')}`;
+    const isCurrentMonth = key === currentMonthKey;
+    const rangeEnd = isCurrentMonth ? todayStr : monthEnd;
+
+    // Les bornes (début de mois, et aujourd'hui pour le mois en cours) comptent
+    // aussi comme des repères : les périodes sans scène doivent peser dans la
+    // moyenne, pas seulement les écarts entre deux scènes jouées.
+    const points = [monthStart, ...datesInMonth, rangeEnd];
+    const gaps = [];
+    for(let i=1;i<points.length;i++){
+      const d0 = new Date(points[i-1]);
+      const d1 = new Date(points[i]);
+      const gapDays = Math.round((d1-d0)/(1000*60*60*24));
+      if(gapDays > 0) gaps.push(gapDays);
+    }
+    if(!gaps.length) return null;
+
+    const avg = gaps.reduce((a,b)=>a+b,0) / gaps.length;
     const label = statsFilter.mode === 'year'
       ? monthLabelFr(parseInt(m,10))
       : monthLabelFr(parseInt(m,10)) + " '" + y.slice(2);
     return {label, avgGap: avg};
-  });
+  }).filter(Boolean);
 }
 
 function renderRegularityChart(list){
@@ -4402,6 +4473,7 @@ function renderHomeWeekSummary(){
   const now = new Date();
   const monthStr = now.toISOString().slice(0,7); // "YYYY-MM"
   const monthName = MONTH_NAMES_FULL_FR[now.getMonth()];
+  const dayOfMonth = now.getDate();
 
   const scenes = loadScenes().filter(s => s.date && s.date.slice(0,7) === monthStr);
   const sceneCount = scenes.length;
@@ -4418,10 +4490,26 @@ function renderHomeWeekSummary(){
     }
   }));
 
+  // Comparaison discrète avec le mois précédent, au même stade (jusqu'au même
+  // jour du mois) — révélée seulement au clic, pour rester discrète.
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevMonthStr = prevMonthDate.getFullYear()+'-'+String(prevMonthDate.getMonth()+1).padStart(2,'0');
+  const prevCutoff = prevMonthStr+'-'+String(dayOfMonth).padStart(2,'0');
+  const prevScenes = loadScenes().filter(s=>s.date && s.date.slice(0,7)===prevMonthStr && s.date<=prevCutoff);
+  const prevNet = prevScenes.reduce((a,s)=>a+((s.gains||0)-(s.depenses||0)),0);
+  let prevTested=0, prevValidated=0;
+  loadTexts().forEach(t=>(t.sessions||[]).forEach(s=>{
+    if(!s.manual && s.date && s.date.slice(0,7)===prevMonthStr && s.date<=prevCutoff){
+      prevTested += (s.tested||0); prevValidated += (s.validated||0);
+    }
+  }));
+  const prevMonthName = MONTH_NAMES_FULL_FR[prevMonthDate.getMonth()];
+  const prevSign = prevNet >= 0 ? '+' : '';
+
   const sign = netMoney >= 0 ? '+' : '';
   const moneyColor = netMoney >= 0 ? 'var(--s2)' : 'var(--s0)';
   wrap.innerHTML = `
-    <div class="section-label">${monthName}</div>
+    <div class="section-label" style="cursor:pointer;" onclick="toggleMonthComparison()">${monthName}</div>
     <div class="stat-card week-summary-card">
       <div class="week-stat"><span class="big-num">${sceneCount}</span><span class="label">scène(s)</span></div>
       <div class="week-stat"><span class="big-num" style="color:${moneyColor};">${sign}${Math.round(netMoney)}€</span><span class="label">bénéfice</span></div>
@@ -4433,7 +4521,15 @@ function renderHomeWeekSummary(){
         <div class="quality-pill" style="background:var(--s2);">${belles}</div>
       </div>
     </div>
+    <div id="home-month-comparison" style="display:none;margin-top:6px;">
+      <div class="plateau-row-meta">Au ${dayOfMonth} ${prevMonthName} : ${prevScenes.length} scène(s) · ${prevTested} testée(s) · ${prevValidated} validée(s) · ${prevSign}${Math.round(prevNet)}€</div>
+    </div>
   `;
+}
+
+function toggleMonthComparison(){
+  const el = document.getElementById('home-month-comparison');
+  if(el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
 }
 
 function renderHomeTodayPlateaux(){
@@ -5375,37 +5471,44 @@ function generateRandomWord(){
   document.getElementById('random-word-display').textContent = word;
 }
 
-/* ---------- Générateur de chiffre aléatoire ---------- */
-const NUMGEN_MAX_KEY = 'backstage_numgen_max';
+/* ---------- Générateur de liste d'écriture (textes de la rotation, ordre aléatoire) ---------- */
+let writingListQueue = [];
+let writingListIndex = 0;
 
-function generateRandomNumber(){
-  let max = parseInt(localStorage.getItem(NUMGEN_MAX_KEY), 10);
-  if(isNaN(max) || max < 1) max = 10;
-  const num = Math.floor(Math.random() * max) + 1;
-  document.getElementById('random-number-display').textContent = num;
-}
-
-function openNumberGenModal(){
-  const current = localStorage.getItem(NUMGEN_MAX_KEY) || '10';
-  document.getElementById('numgen-modal-input').value = current;
-  document.getElementById('numgen-modal-overlay').style.display = 'flex';
-}
-function closeNumberGenModal(){
-  document.getElementById('numgen-modal-overlay').style.display = 'none';
-}
-function confirmNumberGenMax(){
-  let max = parseInt(document.getElementById('numgen-modal-input').value, 10);
-  if(isNaN(max) || max < 1) max = 1;
-  localStorage.setItem(NUMGEN_MAX_KEY, String(max));
-  closeNumberGenModal();
-  generateRandomNumber();
-}
-
-function initNumberGen(){
-  if(localStorage.getItem(NUMGEN_MAX_KEY) === null){
-    localStorage.setItem(NUMGEN_MAX_KEY, '10');
+function handleWritingListClick(){
+  if(writingListIndex >= writingListQueue.length){
+    const rot = loadRotation2();
+    const ids = [...new Set([...(rot.selectedIds||[]), ...(rot.bonusIds||[])])];
+    const texts = loadTexts().filter(t => ids.includes(t.id));
+    if(!texts.length){
+      document.getElementById('writing-list-display').textContent = 'Rotation vide';
+      document.getElementById('writing-list-sub').textContent = '';
+      writingListQueue = [];
+      writingListIndex = 0;
+      return;
+    }
+    const shuffled = texts.map(t=>t.name);
+    for(let i=shuffled.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [shuffled[i],shuffled[j]] = [shuffled[j],shuffled[i]];
+    }
+    writingListQueue = shuffled;
+    writingListIndex = 0;
+  } else {
+    writingListIndex++;
   }
-  generateRandomNumber();
+
+  const display = document.getElementById('writing-list-display');
+  const sub = document.getElementById('writing-list-sub');
+  if(writingListIndex < writingListQueue.length){
+    display.style.fontSize = '18px';
+    display.textContent = writingListQueue[writingListIndex];
+    sub.textContent = `${writingListIndex+1}/${writingListQueue.length} · touche pour la suite`;
+  } else {
+    display.style.fontSize = '16px';
+    display.textContent = 'Terminé ✓';
+    sub.textContent = 'Retouche pour recommencer';
+  }
 }
 
 /* ---------- init ---------- */
@@ -5414,10 +5517,10 @@ document.getElementById('f-nom').addEventListener('input', updateLiveScore);
 document.getElementById('f-nom').addEventListener('input', prefillTypeFromAgenda);
 document.getElementById('f-date').addEventListener('change', updateLiveScore);
 document.getElementById('f-date').addEventListener('change', prefillTypeFromAgenda);
+document.getElementById('f-date').addEventListener('change', populatePlateauNames);
 resetForm();
 renderHomeRating();
 generateRandomWord();
-initNumberGen();
 </script>
 </body>
 </html>
